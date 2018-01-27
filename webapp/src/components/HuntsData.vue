@@ -112,7 +112,7 @@ export default {
               y: hunt.share
             }
           })
-        this.shContainer.series[0].setData([])
+          this.shContainer.series[0].setData([])
           for (const data of sharesData) {
             this.shContainer.series[0].addPoint(data)
           }
