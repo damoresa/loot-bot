@@ -7,7 +7,7 @@
     "rebuild": "npm run clean:front && npm run build:front && npm run extract:front && npm run devStart",
     "devStart": "nodemon --watch src ./src/application.js",
     "start": "node ./src/application.js",
-    "build:front": "cd webapp && npm run build",
+    "build:front": "cd webapp && npm install && npm run build",
     "clean:front": "rimraf public",
     "extract:front": "copyfiles -u 2 webapp/dist/**/* public",
     "postinstall": "npm run clean:front && npm run build:front && npm run extract:front"
