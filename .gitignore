@@ -1,0 +1,15 @@
+# IDEA
+.idea
+*.iml
+
+# NodeJS
+node_modules
+
+# VueJS
+public
+
+# Utils stuff
+mock-hunt
+
+# Secrets
+dev.constants.js

@@ -1,0 +1,32 @@
+{
+  "name": "loot-bot",
+  "version": "1.0.0",
+  "description": "A simple loot bot project for fun",
+  "main": "src/application.js",
+  "scripts": {
+    "rebuild": "npm run clean:front && npm run build:front && npm run extract:front && npm run devStart",
+    "devStart": "nodemon --watch src ./src/application.js",
+    "start": "node ./src/application.js",
+    "build:front": "cd webapp && npm run build",
+    "clean:front": "rimraf public",
+    "extract:front": "copyfiles -u 2 webapp/dist/**/* public",
+    "postinstall": "npm run clean:front && npm run build:front && npm run extract:front"
+  },
+  "author": "Daniel Amores",
+  "dependencies": {
+    "btoa": "1.1.2",
+    "copyfiles": "1.2.0",
+    "discord.js": "11.2.1",
+    "jwt-simple": "0.5.1",
+    "moment": "2.20.1",
+    "mongoose": "5.0.0-rc1",
+    "passport": "0.4.0",
+    "passport-jwt": "3.0.1",
+    "request": "2.83.0",
+    "rimraf": "2.6.2",
+    "winston": "2.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "1.14.7"
+  }
+}
