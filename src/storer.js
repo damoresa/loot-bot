@@ -281,7 +281,7 @@ class Storer {
 
             // The initial expense receives all the loot value
             const parsedExpense = parseExpense(expense);
-            parsedExpense.balance = hunt.loot;
+            parsedExpense.balance = report.loot;
 
             winston.debug(`Start session time ${report.sessionStartTime}`);
             winston.debug(`Session duration ${report.sessionTime}`);
