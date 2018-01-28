@@ -14,7 +14,8 @@ const Hunt = require('./schemas/hunt.schema');
 const parseExpense = (expense) => {
     return {
         amount: Number(expense.amount),
-        reporter: expense.reporter
+        reporter: expense.reporter,
+        balance: 0
     }
 };
 
@@ -278,6 +279,10 @@ class Storer {
             expense.amount = report.supplies;
             expense.reporter = report.reporter;
 
+            // The initial expense receives all the loot value
+            const parsedExpense = parseExpense(expense);
+            parsedExpense.balance = hunt.loot;
+
             winston.debug(`Start session time ${report.sessionStartTime}`);
             winston.debug(`Session duration ${report.sessionTime}`);
             winston.debug(`Session duration (MS) ${duration}`);
@@ -292,7 +297,7 @@ class Storer {
             hunt.loot = report.loot;
             hunt.items = parseItems(report.lootItems);
             hunt.monsters = parseMonsters(report.monsters);
-            hunt.expenses.push(parseExpense(expense));
+            hunt.expenses.push(parsedExpense);
 
             hunt.save((error) => {
                 if (error) {
