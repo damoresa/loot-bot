@@ -9,11 +9,20 @@ const ReportModel = require('./models/report.model');
 
 class Parser {
     constructor() {
+        // Discord bot
         this.parseBalance.bind(this);
         this.parseExpense.bind(this);
         this.parseHelp.bind(this);
         this.parseLoot.bind(this);
-        this.parseLine.bind(this);
+
+        // Web
+        this.parseWebExpense.bind(this);
+        this.parseWebLoot.bind(this);
+
+        // Internals
+        this._parseExpenseContent.bind(this);
+        this._parseLootContent.bind(this);
+        this._parseLine.bind(this);
     }
 
     parseBalance(content) {
@@ -38,15 +47,24 @@ class Parser {
             try {
                 const match = CONSTANTS.COMMANDS_REGEXP.EXPENSE.exec(content);
                 if (match) {
-                    const expense = new ExpenseModel();
-                    expense.amount = match[2];
-                    expense.code = match[1];
-                    expense.reporter = reporter;
+                    const expense = this._parseExpenseContent(reporter, match[1], match[2]);
 
                     resolve(expense);
                 } else {
                     reject(`Unable to parse expense from input ${content}`);
                 }
+            } catch(err) {
+                reject(err);
+            }
+        });
+    }
+
+    parseWebExpense(reporter, huntCode, expenseData) {
+        return new Promise((resolve, reject) => {
+            try {
+                const expense = this._parseExpenseContent(reporter, huntCode, expenseData);
+
+                resolve(expense);
             } catch(err) {
                 reject(err);
             }
@@ -81,25 +99,7 @@ class Parser {
                     const lootData = match[1];
                     const splitData = lootData.split('\n');
 
-                    const report = new ReportModel();
-                    report.reporter = reporter;
-                    let mode = MODE.GENERAL;
-
-                    winston.info('Processing general info');
-
-                    for (const line of splitData) {
-                        // If it's any of the special lines, process them.
-                        // Do the usual procedure otherwise
-                        if (CONSTANTS.DATA_REGEXP.LOOT_ITEMS.exec(line)) {
-                            winston.info('Processing loot info');
-                            mode = MODE.ITEMS;
-                        } else if (CONSTANTS.DATA_REGEXP.MONSTERS.exec(line)) {
-                            winston.info('Processing monster kills info');
-                            mode = MODE.MONSTERS;
-                        } else {
-                            this.parseLine(mode, line, report);
-                        }
-                    }
+                    const report = this._parseLootContent(reporter, lootData);
 
                     resolve(report);
                 } else {
@@ -111,7 +111,55 @@ class Parser {
         });
     }
 
-    parseLine(mode, line, report) {
+    parseWebLoot(reporter, content) {
+        return new Promise((resolve, reject) => {
+            try {
+                const report = this._parseLootContent(reporter, content);
+
+                resolve(report);
+            } catch(err) {
+                reject(err);
+            }
+        });
+    }
+
+    _parseExpenseContent(reporter, huntCode, expenseData) {
+        const expense = new ExpenseModel();
+        expense.amount = expenseData;
+        expense.code = huntCode;
+        expense.reporter = reporter;
+
+        return expense;
+    }
+
+    _parseLootContent(reporter, content) {
+
+        const splitData = content.split('\n');
+
+        const report = new ReportModel();
+        report.reporter = reporter;
+        let mode = MODE.GENERAL;
+
+        winston.info('Processing general info');
+
+        for (const line of splitData) {
+            // If it's any of the special lines, process them.
+            // Do the usual procedure otherwise
+            if (CONSTANTS.DATA_REGEXP.LOOT_ITEMS.exec(line)) {
+                winston.info('Processing loot info');
+                mode = MODE.ITEMS;
+            } else if (CONSTANTS.DATA_REGEXP.MONSTERS.exec(line)) {
+                winston.info('Processing monster kills info');
+                mode = MODE.MONSTERS;
+            } else {
+                this._parseLine(mode, line, report);
+            }
+        }
+
+        return report;
+    }
+
+    _parseLine(mode, line, report) {
         switch (mode) {
             case MODE.GENERAL:
                 const damage = CONSTANTS.DATA_REGEXP.DAMAGE.exec(line);

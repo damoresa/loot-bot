@@ -63,9 +63,9 @@ const launchDiscordBot = () => {
 
                         message.reply(response);
                     }).catch((error) => {
-                    winston.error(`Unable to store hunt report for user ${message.author.username}: ${error}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
-                });
+                        winston.error(`Unable to store hunt report for user ${message.author.username}: ${error}`);
+                        message.reply(`Something went wrong, please contact an administrator.`);
+                    });
             } else if (CONSTANTS.COMMANDS_REGEXP.EXPENSE.test(message.content)) {
                 Parser.parseExpense(message.author.username, message.content)
                     .then(Service.saveExpense)
@@ -123,18 +123,18 @@ const launchDiscordBot = () => {
                         });
                         message.reply(response);
                     }).catch((error) => {
-                    winston.error(`Unable to generate this month's hunts report for user ${message.author.username}: ${error}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
-                });
+                        winston.error(`Unable to generate this month's hunts report for user ${message.author.username}: ${error}`);
+                        message.reply(`Something went wrong, please contact an administrator.`);
+                    });
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHBALANCE.test(message.content)) {
                 Service.calculateMonthBalance(message.author.username)
                     .then((output) => {
                         const response = `You've spent ${output.expenses} supplies and your hunts have generated ${output.loot} split loot.`;
                         message.reply(response);
                     }).catch((error) => {
-                    winston.error(`Unable to generate this month's hunts balance report for user ${message.author.username}: ${error}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
-                });
+                        winston.error(`Unable to generate this month's hunts balance report for user ${message.author.username}: ${error}`);
+                        message.reply(`Something went wrong, please contact an administrator.`);
+                    });
             } else {
                 winston.error(`${message.author.username} tried to use the command ${message.content}`);
                 message.reply(`Unknown or wrong frommated command, please try !help to learn about the available commands.`);

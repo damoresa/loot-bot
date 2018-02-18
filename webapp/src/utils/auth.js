@@ -2,7 +2,6 @@ const TOKEN_PROP = 'lb-token'
 
 export function isLoggedIn () {
   const token = getToken()
-  // TODO: Validate that token is valid
   if (token) {
     return true
   } else {

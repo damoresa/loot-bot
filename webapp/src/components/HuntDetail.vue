@@ -10,6 +10,9 @@
           <p class="card-text">Expenses: {{ hunt.expenses }}</p>
           <p class="card-text">Share: {{ hunt.share }}</p>
         </div>
+      </div>
+
+      <div class="row mt-5">
         <div class="col-md-6">
           <h5 class="card-title">Reporters</h5>
 
@@ -29,11 +32,7 @@
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
 
-      <div class="row mt-5">
-        <div class="col-md-6">
           <h5 class="card-title">Monster kills</h5>
 
           <div class="table-responsive">

@@ -152,7 +152,7 @@ class Storer {
                 query['date'] = {$lt: endDate.toDate()};
             }
 
-            Hunt.find(query, (error, hunts) => {
+            Hunt.find(query).sort('date').exec((error, hunts) => {
                 if (error) {
                     reject(error);
                 } else {
