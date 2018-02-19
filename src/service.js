@@ -36,6 +36,7 @@ class HuntService {
 
     calculateMonthBalance(username) {
         return new Promise((resolve, reject) => {
+            // FIXME: Add date filters so this becomes month data instead of overall data
             winston.info(`Generating month balance for user ${username}.`);
 
             Storer.getHuntsByUser(username).then(

@@ -90,11 +90,14 @@
 
 <script>
 import axios from 'axios'
+import moment from 'moment'
 
 import Chart from './../sections/Chart'
 import Modal from './../sections/Modal'
 import {getToken} from './../utils/auth'
 import {EventBus} from './../utils/bus'
+
+// FIXME: Revisit dates initialization
 
 export default {
   name: 'HuntsData',
@@ -207,6 +210,8 @@ export default {
     }
   },
   created: function () {
+    this.startDate = moment().startOf('month').format('YYYY-MM-DD')
+    this.endDate = moment(this.startDate).add(1, 'month').format('YYYY-MM-DD')
     this.loadHunts()
   },
   methods: {
@@ -214,8 +219,8 @@ export default {
       this.loadHunts()
     },
     reset: function (event) {
-      this.startDate = ''
-      this.endDate = ''
+      this.startDate = moment().startOf('month').format('YYYY-MM-DD')
+      this.endDate = moment(this.startDate).add(1, 'month').format('YYYY-MM-DD')
       this.loadHunts()
     },
     loadHunts: function () {
@@ -270,7 +275,6 @@ export default {
       return errors
     },
     submitLootData: function () {
-      console.log(`Submitting ${JSON.stringify(this.lootData)}`)
       const body = {
         lootData: this.lootData
       }

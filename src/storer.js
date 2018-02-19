@@ -147,6 +147,7 @@ class Storer {
     getHuntsByUser(username, startDate, endDate) {
         return new Promise((resolve, reject) => {
             winston.debug(`Retrieving hunts for user ${username}`);
+            winston.debug(`Date range: ${startDate} -> ${endDate}`);
 
             const query = {
                 'expenses.reporter': username,
