@@ -97,8 +97,6 @@ import Modal from './../sections/Modal'
 import {getToken} from './../utils/auth'
 import {EventBus} from './../utils/bus'
 
-// FIXME: Revisit dates initialization
-
 export default {
   name: 'HuntsData',
   components: {

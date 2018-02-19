@@ -7,20 +7,43 @@
       </div>
     </div>
     <Footer></Footer>
+    <Spinner></Spinner>
     <Toast></Toast>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 import 'bootstrap'
 import Footer from './sections/Footer'
 import Header from './sections/Header'
+import Spinner from './sections/Spinner'
 import Toast from './sections/Toast'
+import {EventBus} from './utils/bus'
+
+// Set axios interceptors
+// Request
+axios.interceptors.request.use((config) => {
+  EventBus.$emit('lb-spinner-display', true)
+  return config;
+}, (error) => {
+  EventBus.$emit('lb-spinner-display', false)
+  return Promise.reject(error);
+})
+// Response
+axios.interceptors.response.use((response) => {
+  EventBus.$emit('lb-spinner-display', false)
+  return response;
+}, (error) => {
+  EventBus.$emit('lb-spinner-display', false)
+  return Promise.reject(error);
+})
 
 export default {
   components: {
     Footer,
     Header,
+    Spinner,
     Toast
   },
   name: 'App'
