@@ -98,20 +98,24 @@ class Storer {
                 if (error) {
                     reject(error);
                 } else {
-                    const balance = new BalanceModel();
-                    balance.code = hunt.code;
-                    balance.loot = hunt.loot;
-					balance.balances = hunt.expenses.map((expense) => {
-						return {
-							balance: expense.balance,
-							reporter: expense.reporter,
-						}
-					});
-					balance.expenses = hunt.expenses.reduce((total, expense) => {
-						return total + expense.amount;
-					}, 0);
+                    if (hunt) {
+                        const balance = new BalanceModel();
+                        balance.code = hunt.code;
+                        balance.loot = hunt.loot;
+                        balance.balances = hunt.expenses.map((expense) => {
+                            return {
+                                balance: expense.balance,
+                                reporter: expense.reporter,
+                            }
+                        });
+                        balance.expenses = hunt.expenses.reduce((total, expense) => {
+                            return total + expense.amount;
+                        }, 0);
 
-                    resolve(balance);
+                        resolve(balance);
+                    } else {
+                        reject(`Unable to find hunt with code ${code}`);
+                    }
                 }
             });
         });
@@ -130,7 +134,11 @@ class Storer {
                 if (error) {
                     reject(error);
                 } else {
-                    resolve(hunt);
+                    if (hunt) {
+                        resolve(hunt);
+                    } else {
+                        reject(`Unable to find hunt with code ${huntCode} and reporter ${username}`);
+                    }
                 }
             });
 		});
@@ -204,61 +212,69 @@ class Storer {
                 if (error) {
                     reject(error);
                 } else {
-                    const parsedExpense =  parseExpense(expense);
-					// Map the existing data to a readable format
-					const currentData = hunt.expenses.map((expenseData) => {
-						return {
-							amount: expenseData.amount,
-							balance: expenseData.balance,
-							reporter: expenseData.reporter,
-						};
-					});
-					
-					winston.debug(`Current data: ${JSON.stringify(currentData)}`);
-					
-                    const expenseExists = currentData.find((data) => data.reporter === parsedExpense.reporter);
+                    if (hunt) {
+                        const parsedExpense = parseExpense(expense);
+                        // Map the existing data to a readable format
+                        const currentData = hunt.expenses.map((expenseData) => {
+                            return {
+                                amount: expenseData.amount,
+                                balance: expenseData.balance,
+                                reporter: expenseData.reporter,
+                            };
+                        });
 
-					let calculatedData;
-                    if (expenseExists) {
-                        winston.debug(`Expense already exists for hunt ${expense.code} and reporter ${expense.reporter}`);
-						
-						// Update the existing data
-						currentData.forEach((entry) => {
-							if (entry.reporter === parsedExpense.reporter) {
-								entry.amount = parsedExpense.amount;
-								entry.balance = 0;
-							}
-						});
-						
-						// Calculate balances for everyone
-						calculatedData = calculateBalance(hunt, currentData);
-                    } else {
-                        winston.debug(`New expense for hunt ${expense.code} and reporter ${expense.reporter}`);
-						
-						// Add the new data
-						currentData.push({ amount: parsedExpense.amount, balance: 0, reporter: parsedExpense.reporter });
-                        hunt.expenses.push(parsedExpense);
-						
-						// Calculate balances for everyone
-						calculatedData = calculateBalance(hunt, currentData);
-                    }
-					
-					// Apply the calculated data
-					winston.debug(`Calculated balance: ${JSON.stringify(calculatedData)}`);
-					hunt.expenses.forEach((expenseData) => {
-						const reporterData = calculatedData.find((data) => data.reporter === expenseData.reporter);
-						expenseData.amount = reporterData.amount;
-						expenseData.balance = reporterData.balance;
-					});
-					
-					// Save the data
-                    hunt.save((error) => {
-                        if (error) {
-                            winston.error(`Unable to persist expense: ${error}`);
-                            reject(error);
+                        winston.debug(`Current data: ${JSON.stringify(currentData)}`);
+
+                        const expenseExists = currentData.find((data) => data.reporter === parsedExpense.reporter);
+
+                        let calculatedData;
+                        if (expenseExists) {
+                            winston.debug(`Expense already exists for hunt ${expense.code} and reporter ${expense.reporter}`);
+
+                            // Update the existing data
+                            currentData.forEach((entry) => {
+                                if (entry.reporter === parsedExpense.reporter) {
+                                    entry.amount = parsedExpense.amount;
+                                    entry.balance = 0;
+                                }
+                            });
+
+                            // Calculate balances for everyone
+                            calculatedData = calculateBalance(hunt, currentData);
+                        } else {
+                            winston.debug(`New expense for hunt ${expense.code} and reporter ${expense.reporter}`);
+
+                            // Add the new data
+                            currentData.push({
+                                amount: parsedExpense.amount,
+                                balance: 0,
+                                reporter: parsedExpense.reporter
+                            });
+                            hunt.expenses.push(parsedExpense);
+
+                            // Calculate balances for everyone
+                            calculatedData = calculateBalance(hunt, currentData);
                         }
-                        resolve();
-                    });
+
+                        // Apply the calculated data
+                        winston.debug(`Calculated balance: ${JSON.stringify(calculatedData)}`);
+                        hunt.expenses.forEach((expenseData) => {
+                            const reporterData = calculatedData.find((data) => data.reporter === expenseData.reporter);
+                            expenseData.amount = reporterData.amount;
+                            expenseData.balance = reporterData.balance;
+                        });
+
+                        // Save the data
+                        hunt.save((error) => {
+                            if (error) {
+                                winston.error(`Unable to persist expense: ${error}`);
+                                reject(error);
+                            }
+                            resolve();
+                        });
+                    } else {
+                        reject(`Unable to find hunt with code ${expense.code}`);
+                    }
                 }
             });
         });
