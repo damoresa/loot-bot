@@ -25,18 +25,18 @@ import {EventBus} from './utils/bus'
 // Request
 axios.interceptors.request.use((config) => {
   EventBus.$emit('lb-spinner-display', true)
-  return config;
+  return config
 }, (error) => {
   EventBus.$emit('lb-spinner-display', false)
-  return Promise.reject(error);
+  return Promise.reject(error)
 })
 // Response
 axios.interceptors.response.use((response) => {
   EventBus.$emit('lb-spinner-display', false)
-  return response;
+  return response
 }, (error) => {
   EventBus.$emit('lb-spinner-display', false)
-  return Promise.reject(error);
+  return Promise.reject(error)
 })
 
 export default {

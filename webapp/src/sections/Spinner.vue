@@ -19,7 +19,7 @@
 import {EventBus} from './../utils/bus'
 
 export default {
-  name: "Spinner",
+  name: 'Spinner',
   data: function () {
     return {
       show: false
@@ -29,7 +29,7 @@ export default {
     EventBus.$on('lb-spinner-display', (display) => {
       this.show = display
     })
-  },
+  }
 }
 </script>
 
