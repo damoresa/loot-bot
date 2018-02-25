@@ -29,7 +29,7 @@ class ReportsController {
         const username = request.user.username;
         const lootData = request.body.lootData;
 		
-		winston.debug(`Storing: ${JSON.stringify(lootData)}`);
+		winston.debug(`${username} is storing: ${JSON.stringify(lootData)}`);
 
        Parser.parseWebLoot(username, lootData)
             .then(Service.saveLoot)
@@ -47,6 +47,8 @@ class ReportsController {
         const username = request.user.username;
         const huntCode = request.params.huntId;
         const expenseData = request.body.expenseData;
+
+        winston.debug(`${username} is storing: ${expenseData} cost on ${huntCode}`);
 
         Parser.parseWebExpense(username, huntCode, expenseData)
             .then(Service.saveExpense)

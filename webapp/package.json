@@ -1,9 +1,8 @@
 {
   "name": "loot-bot",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Loot bot's front end application",
-  "author": "Daniel Amores",
-  "private": true,
+  "author": "Daniel Amores <damoresac@gmail.com>",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",

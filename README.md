@@ -28,7 +28,7 @@ Your share of the loot is calculated following these steps:
 ### Future features
 
 - [x] Submit loot reports through the web application.
-- [ ] Submit expenses through the web application.
+- [x] Submit expenses through the web application.
 
 ### Possible future features
 
