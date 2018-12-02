@@ -13,6 +13,7 @@
   },
   "author": "Daniel Amores <damoresac@gmail.com>",
   "dependencies": {
+    "bluebird": "3.5.3",
     "btoa": "1.1.2",
     "discord.js": "11.2.1",
     "express": "4.16.2",

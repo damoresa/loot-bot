@@ -25,7 +25,7 @@ const CONSTANTS = {
     },
     'DATA_REGEXP': {
         'DAMAGE': /Damage: (\d+[,\d+]*)/,
-        'DETAIL_ENTRY': /\s*(\d+)x [a|an ]*(['\w]+['\s\w]*)/,
+        'DETAIL_ENTRY': /\s*(None|(\d+)x [a|an ]*(['\w]+['\s\w]*))/,
         'HEALING': /Healing: (\d+[,\d+]*)/,
         'LOOT': /Loot: (\d+[,\d+]*)/,
         'LOOT_ITEMS': /Looted items:/,

@@ -1,5 +1,6 @@
 'use strict';
 
+const Promise = require('bluebird');
 const winston = require('winston');
 
 const CONSTANTS = require('./constants/constants');
@@ -55,7 +56,7 @@ class Parser {
                 } else {
                     reject(`Unable to parse expense from input ${content}`);
                 }
-            } catch(err) {
+            } catch (err) {
                 reject(err);
             }
         });
@@ -67,7 +68,7 @@ class Parser {
                 const expense = this._parseExpenseContent(reporter, huntCode, expenseData);
 
                 resolve(expense);
-            } catch(err) {
+            } catch (err) {
                 reject(err);
             }
         });
@@ -99,7 +100,6 @@ class Parser {
                 const match = CONSTANTS.COMMANDS_REGEXP.LOOT.exec(content);
                 if (match) {
                     const lootData = match[1];
-                    const splitData = lootData.split('\n');
 
                     const report = this._parseLootContent(reporter, lootData);
 
@@ -107,7 +107,7 @@ class Parser {
                 } else {
                     reject(`Unable to parse expense from input ${content}`);
                 }
-            } catch(err) {
+            } catch (err) {
                 reject(err);
             }
         });
@@ -119,7 +119,7 @@ class Parser {
                 const report = this._parseLootContent(reporter, content);
 
                 resolve(report);
-            } catch(err) {
+            } catch (err) {
                 reject(err);
             }
         });
@@ -205,21 +205,27 @@ class Parser {
             case MODE.ITEMS:
                 const itemDetail = CONSTANTS.DATA_REGEXP.DETAIL_ENTRY.exec(line);
 
-                const itemData = new ReportDetailModel();
-                itemData.amount = itemDetail[1];
-                itemData.name = itemDetail[2];
+                // Fixes a bug where no loot reports would silently crash.
+                if (itemDetail[1] !== 'None') {
+                    const itemData = new ReportDetailModel();
+                    itemData.amount = itemDetail[2];
+                    itemData.name = itemDetail[3];
 
-                report.addLootItem(itemData);
+                    report.addLootItem(itemData);
+                }
 
                 break;
             case MODE.MONSTERS:
                 const monsterDetail = CONSTANTS.DATA_REGEXP.DETAIL_ENTRY.exec(line);
 
-                const monsterData = new ReportDetailModel();
-                monsterData.amount = monsterDetail[1];
-                monsterData.name = monsterDetail[2];
+                // Fixes a bug where no monsters reports would silently crash.
+                if (monsterDetail[1] !== 'None') {
+                    const monsterData = new ReportDetailModel();
+                    monsterData.amount = monsterDetail[2];
+                    monsterData.name = monsterDetail[3];
 
-                report.addMonster(monsterData);
+                    report.addMonster(monsterData);
+                }
 
                 break;
             default:

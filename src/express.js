@@ -21,7 +21,7 @@ const launchExpress = () => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header('Access-Control-Allow-Headers', 'Origin, Accept, Content-Type, Authorization');
         // Allow all preflight OPTIONS requests in order to avoid issues since they don't have the Authorization header
-        if (req.method == 'OPTIONS') {
+        if (req.method === 'OPTIONS') {
             res.status(200).end();
         } else {
             next();

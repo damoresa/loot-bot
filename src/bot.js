@@ -18,7 +18,7 @@ const launchDiscordBot = () => {
         client.user.setPresence({game: {name: 'Tibia', type: 0}});
     });
 
-    client.on('message', (message) => {
+    client.on('message', async (message) => {
         if (message.author.username !== CONSTANTS.BOT_NAME) {
             if (CONSTANTS.COMMANDS_REGEXP.HELP.test(message.content)) {
 
@@ -34,109 +34,111 @@ const launchDiscordBot = () => {
                 response += `Possible TODO list:\n`;
                 response += ` - !monsters HUNTCODE : displays the monsters slain on for the given hunt code.\n`;
 
-                Parser.parseHelp(message.content)
-                    .then((username) => {
-                        if (username) {
-                            message.channel.send(`${username}, ${response}`);
-                        } else {
-                            message.reply(response);
-                        }
-                    })
-                    .catch((error) => {
-                        winston.error(`Unable to generate help message: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
-                    });
+                try {
+                    const username = await Parser.parseHelp(message.content);
+                    if (username) {
+                        message.channel.send(`${username}, ${response}`);
+                    } else {
+                        message.reply(response);
+                    }
+                } catch (err) {
+                    winston.error(`Unable to generate help message: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
             } else if (CONSTANTS.COMMANDS_REGEXP.LOOT.test(message.content)) {
-                Parser.parseLoot(message.author.username, message.content)
-                    .then(Service.saveLoot)
-                    .then((output) => {
-                        let response = `You hunted for ${output.sessionTime} hours:\n`;
-                        response += ` - Experience: ${output.xp}\n`;
-                        response += ` - Loot value: ${output.loot}\n`;
-                        response += ` - Monster kills:\n`;
-                        for (const monster of output.monsters) {
-                            response += `   * ${monster.amount} ${monster.name}\n`;
-                        }
-                        // The code will only be useful for stored parses
-                        if (output.code) {
-                            response += `\n`;
-                            response += `This hunt has been given the code ${output.code}. If you wish to add expenses to it, use the !expense command.`;
-                        }
+                try {
+                    const lootReport = await Parser.parseLoot(message.author.username, message.content);
+                    const output = await Service.saveLoot(lootReport);
 
-                        message.reply(response);
-                    }).catch((error) => {
-                        winston.error(`Unable to store hunt report for user ${message.author.username}: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
-                    });
+                    let response = `You hunted for ${output.sessionTime} hours:\n`;
+                    response += ` - Experience: ${output.xp}\n`;
+                    response += ` - Loot value: ${output.loot}\n`;
+                    response += ` - Monster kills:\n`;
+                    for (const monster of output.monsters) {
+                        response += `   * ${monster.amount} ${monster.name}\n`;
+                    }
+                    // The code will only be useful for stored parses
+                    if (output.code) {
+                        response += `\n`;
+                        response += `This hunt has been given the code ${output.code}. If you wish to add expenses to it, use the !expense command.`;
+                    }
+
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to store hunt report for user ${message.author.username}: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
             } else if (CONSTANTS.COMMANDS_REGEXP.EXPENSE.test(message.content)) {
-                Parser.parseExpense(message.author.username, message.content)
-                    .then(Service.saveExpense)
-                    .then((output) => {
-                        const response = `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.`;
-                        message.reply(response);
-                    })
-                    .catch((error) => {
-                        winston.error(`Unable to store expense for user ${message.author.username}: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
-                    });
-            } else if (CONSTANTS.COMMANDS_REGEXP.BALANCE.test(message.content)) {
-                Parser.parseBalance(message.content)
-                    .then(Service.calculateBalance)
-                    .then((balance) => {
-                        let response = `The hunt with code ${balance.code} has registered the following data:\n`;
-                        response += ` - Loot value: ${balance.loot}\n`;
-                        response += ` - Expenses value: ${balance.expenses}\n`;
-                        response += `\n`;
-                        response += `The overall balance is ${balance.loot - balance.expenses}.\n`;
-                        response += `\n`;
-                        response += `The share per reporter is as follows:\n`;
-                        for (const share of balance.balances) {
-                            response += ` - ${share.reporter}: ${share.balance}\n`;
-                        }
+                try {
+                    const expenseReport = await Parser.parseExpense(message.author.username, message.content);
+                    const output = await Service.saveExpense(expenseReport);
 
-                        message.reply(response);
-                    })
-                    .catch((error) => {
-                        winston.error(`Unable to generate hunt balance for user ${message.author.username}: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
-                    });
+                    const response = `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.`;
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to store expense for user ${message.author.username}: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
+            } else if (CONSTANTS.COMMANDS_REGEXP.BALANCE.test(message.content)) {
+                try {
+                    const huntCode = await Parser.parseBalance(message.content);
+                    const balance = await Service.calculateBalance(huntCode);
+
+                    let response = `The hunt with code ${balance.code} has registered the following data:\n`;
+                    response += ` - Loot value: ${balance.loot}\n`;
+                    response += ` - Expenses value: ${balance.expenses}\n`;
+                    response += `\n`;
+                    response += `The overall balance is ${balance.loot - balance.expenses}.\n`;
+                    response += `\n`;
+                    response += `The share per reporter is as follows:\n`;
+                    for (const share of balance.balances) {
+                        response += ` - ${share.reporter}: ${share.balance}\n`;
+                    }
+
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to generate hunt balance for user ${message.author.username}: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHXP.test(message.content)) {
-                Service.calculateMonthExp(message.author.username)
-                    .then((output) => {
-                        let response = `You've obtained ${output} experience this month.\n`;
-                        response += `NOTE: Keep in mind deaths are not being tracked, so experience losses are not accounted.`;
-                        message.reply(response);
-                    })
-                    .catch((error) => {
-                        winston.error(`Unable to generate monthly experience report for user ${message.author.username}: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
-                    });
+                try {
+                    const output = await Service.calculateMonthExp(message.author.username);
+
+                    let response = `You've obtained ${output} experience this month.\n`;
+                    response += `NOTE: Keep in mind deaths are not being tracked, so experience losses are not accounted.`;
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to generate monthly experience report for user ${message.author.username}: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHHUNTS.test(message.content)) {
-                Service.retrieveMonthHunts()
-                    .then((output) => {
-                        let response = `The following hunts have been recorded this month:\n`;
-                        output.forEach((hunt) => {
-                            response += ` - Hunt ${hunt.code} happened on ${hunt.date}.\n`;
-                            response += `   The following players participated in the hunt:\n`;
-                            hunt.participants.forEach((participant) => {
-                                response += `    * ${participant}\n`;
-                            });
-                            response += `\n`;
+                try {
+                    const output = await Service.retrieveMonthHunts();
+
+                    let response = `The following hunts have been recorded this month:\n`;
+                    output.forEach((hunt) => {
+                        response += ` - Hunt ${hunt.code} happened on ${hunt.date}.\n`;
+                        response += `   The following players participated in the hunt:\n`;
+                        hunt.participants.forEach((participant) => {
+                            response += `    * ${participant}\n`;
                         });
-                        message.reply(response);
-                    }).catch((error) => {
-                        winston.error(`Unable to generate this month's hunts report for user ${message.author.username}: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
+                        response += `\n`;
                     });
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to generate this month's hunts report for user ${message.author.username}: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHBALANCE.test(message.content)) {
-                Service.calculateMonthBalance(message.author.username)
-                    .then((output) => {
-                        const response = `You've spent ${output.expenses} supplies and your hunts have generated ${output.loot} split loot.`;
-                        message.reply(response);
-                    }).catch((error) => {
-                        winston.error(`Unable to generate this month's hunts balance report for user ${message.author.username}: ${error}`);
-                        message.reply(`Something went wrong, please contact an administrator.`);
-                    });
+                try {
+                    const output = await Service.calculateMonthBalance(message.author.username);
+
+                    const response = `You've spent ${output.expenses} supplies and your hunts have generated ${output.loot} split loot.`;
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to generate this month's hunts balance report for user ${message.author.username}: ${err}`);
+                    message.reply(`Something went wrong, please contact an administrator.`);
+                }
             } else {
                 winston.error(`${message.author.username} tried to use the command ${message.content}`);
                 message.reply(`Unknown or wrong frommated command, please try !help to learn about the available commands.`);
