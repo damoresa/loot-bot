@@ -1,6 +1,6 @@
 ## Loot Bot
 
-[![Build Status](https://travis-ci.org/damoresa/taskmanager.svg?branch=master)](https://travis-ci.org/damoresa/taskmanager)
+[![Build Status](https://travis-ci.org/damoresa/loot-bot.svg?branch=master)](https://travis-ci.org/damoresa/loot-bot)
 
 _loot-bot_ has been developed to ease managing loot on the MMO [Tibia](http://www.tibia.com).  
 The application consists of a [_Discord_](https://discordapp.com/) bot and a _VueJS_ web application.
@@ -29,6 +29,8 @@ Your share of the loot is calculated following these steps:
 
 - [x] Submit loot reports through the web application.
 - [x] Submit expenses through the web application.
+- [ ] Generate a pin code for hunts s only "_authorized_" persons can submit expenses.
+- [ ] Profit per reporter on balance.
 
 ### Possible future features
 

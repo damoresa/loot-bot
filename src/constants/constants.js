@@ -1,3 +1,5 @@
+'use strict';
+
 const CONSTANTS = {
     // Connectivity
     'DATABASE': process.env.MONGODB_URI,

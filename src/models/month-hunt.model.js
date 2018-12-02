@@ -1,3 +1,5 @@
+'use strict';
+
 class MonthHuntModel {
     constructor() {
         this._code;

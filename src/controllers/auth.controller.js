@@ -1,3 +1,5 @@
+'use strict';
+
 const btoa = require('btoa');
 const express = require('express');
 const Request = require('request');

@@ -1,3 +1,5 @@
+'use strict';
+
 class SingleHuntReportModel {
     constructor() {
 		this.code;

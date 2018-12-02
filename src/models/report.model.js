@@ -1,3 +1,5 @@
+'use strict';
+
 class ReportModel {
     constructor() {
         this._code;

@@ -1,3 +1,5 @@
+'use strict';
+
 class ExpenseModel {
     constructor() {
         this._amount;
