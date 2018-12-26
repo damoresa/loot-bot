@@ -19,7 +19,7 @@ const launchDiscordBot = () => {
     });
 
     client.on('message', async (message) => {
-        if (message.author.username !== CONSTANTS.BOT_NAME) {
+        if (message.author.username !== CONSTANTS.BOT_NAME && message.content.startsWith('!')) {
             if (CONSTANTS.COMMANDS_REGEXP.HELP.test(message.content)) {
 
                 // TODO: Use Markdown - https://support.discordapp.com/hc/es/articles/210298617-Markdown-de-texto-b%C3%A1sico-Formato-de-Chat-Negrilla-It%C3%A1lico-Subrayado-
@@ -66,7 +66,7 @@ const launchDiscordBot = () => {
                     message.reply(response);
                 } catch (err) {
                     winston.error(`Unable to store hunt report for user ${message.author.username}: ${err}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
+                    message.reply('Unable to store hunt report.');
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.EXPENSE.test(message.content)) {
                 try {
@@ -84,11 +84,15 @@ const launchDiscordBot = () => {
                     const huntCode = await Parser.parseBalance(message.content);
                     const balance = await Service.calculateBalance(huntCode);
 
+                    const overallBalance = balance.loot - balance.expenses;
                     let response = `The hunt with code ${balance.code} has registered the following data:\n`;
                     response += ` - Loot value: ${balance.loot}\n`;
                     response += ` - Expenses value: ${balance.expenses}\n`;
                     response += `\n`;
-                    response += `The overall balance is ${balance.loot - balance.expenses}.\n`;
+                    response += `The overall balance is ${overallBalance}.\n`;
+                    if (overallBalance > 0) {
+                        response += `The overall balance is ${overallBalance / balance.balances.length}.\n`;
+                    }
                     response += `\n`;
                     response += `The share per reporter is as follows:\n`;
                     for (const share of balance.balances) {
@@ -97,47 +101,65 @@ const launchDiscordBot = () => {
 
                     message.reply(response);
                 } catch (err) {
-                    winston.error(`Unable to generate hunt balance for user ${message.author.username}: ${err}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
+                    winston.error(`Unable to generate balance for user ${message.author.username}: ${err}`);
+                    message.reply('Unable to generate balance for the requested hunt code.');
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHXP.test(message.content)) {
                 try {
                     const output = await Service.calculateMonthExp(message.author.username);
 
-                    let response = `You've obtained ${output} experience this month.\n`;
-                    response += `NOTE: Keep in mind deaths are not being tracked, so experience losses are not accounted.`;
+                    let response;
+                    if (output === 0) {
+                        response += 'You haven\'t earned any experience this month.';
+                    } else {
+                        response = `You've obtained ${output} experience this month.\n`;
+                        response += `NOTE: Keep in mind deaths are not being tracked, so experience losses are not accounted.`;
+                    }
+
                     message.reply(response);
                 } catch (err) {
                     winston.error(`Unable to generate monthly experience report for user ${message.author.username}: ${err}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
+                    message.reply('Unable to generate monthly experience report.');
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHHUNTS.test(message.content)) {
                 try {
                     const output = await Service.retrieveMonthHunts();
 
-                    let response = `The following hunts have been recorded this month:\n`;
-                    output.forEach((hunt) => {
-                        response += ` - Hunt ${hunt.code} happened on ${hunt.date}.\n`;
-                        response += `   The following players participated in the hunt:\n`;
-                        hunt.participants.forEach((participant) => {
-                            response += `    * ${participant}\n`;
+                    let response;
+                    if (output.length === 0) {
+                        response = 'You haven\'t participated on any hunt this month.';
+                    } else {
+                        response = `The following hunts have been recorded this month:\n`;
+                        output.forEach((hunt) => {
+                            response += ` - Hunt ${hunt.code} happened on ${hunt.date}.\n`;
+                            response += `   The following players participated in the hunt:\n`;
+                            hunt.participants.forEach((participant) => {
+                                response += `    * ${participant}\n`;
+                            });
+                            response += `\n`;
                         });
-                        response += `\n`;
-                    });
+                    }
+
                     message.reply(response);
                 } catch (err) {
                     winston.error(`Unable to generate this month's hunts report for user ${message.author.username}: ${err}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
+                    message.reply('Unable to generate this month\'s hunts report.');
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHBALANCE.test(message.content)) {
                 try {
                     const output = await Service.calculateMonthBalance(message.author.username);
 
-                    const response = `You've spent ${output.expenses} supplies and your hunts have generated ${output.loot} split loot.`;
+                    let response;
+                    if (output.expenses === 0 && output.loot === 0) {
+                        response = 'You haven\'t earned or spent anything this month.';
+                    } else {
+                        response = `You've spent ${output.expenses} supplies and your hunts have generated ${output.loot} split loot.`;
+                    }
+
                     message.reply(response);
                 } catch (err) {
                     winston.error(`Unable to generate this month's hunts balance report for user ${message.author.username}: ${err}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
+                    message.reply('Unable to generate this month\'s hunts balance report.');
                 }
             } else {
                 winston.error(`${message.author.username} tried to use the command ${message.content}`);
