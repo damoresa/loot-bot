@@ -110,7 +110,7 @@ const launchDiscordBot = () => {
 
                     let response;
                     if (output === 0) {
-                        response += 'You haven\'t earned any experience this month.';
+                        response = 'You haven\'t earned any experience this month.';
                     } else {
                         response = `You've obtained ${output} experience this month.\n`;
                         response += `NOTE: Keep in mind deaths are not being tracked, so experience losses are not accounted.`;
