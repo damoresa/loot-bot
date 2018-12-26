@@ -1,6 +1,6 @@
 {
   "name": "loot-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple loot bot project for fun",
   "main": "src/application.js",
   "scripts": {

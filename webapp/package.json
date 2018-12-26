@@ -1,6 +1,6 @@
 {
   "name": "loot-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Loot bot's front end application",
   "author": "Daniel Amores <damoresac@gmail.com>",
   "scripts": {
