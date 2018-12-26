@@ -25,19 +25,20 @@ class HuntService {
         winston.info(`Generating balance report for hunt ${huntCode}.`);
 
         try {
-            const balance = await Storer.getBalanceData(huntCode);
-            return balance;
+            return await Storer.getBalanceData(huntCode);
         } catch (err) {
             throw err;
         }
     }
 
     async calculateMonthBalance(username) {
-        // FIXME: Add date filters so this becomes month data instead of overall data
         winston.info(`Generating month balance for user ${username}.`);
 
         try {
-            const hunts = await Storer.getHuntsByUser(username);
+            const month = moment().startOf('month');
+            const nextMonth = moment(month).add(1, 'month');
+
+            const hunts = await Storer.getHuntsByUser(username, month, nextMonth);
             const monthBalance = new MonthBalanceModel();
             const expensesValue = hunts.reduce((expenses, hunt) => {
                 return expenses.concat(hunt.expenses.filter((expense) => expense.reporter === username));
