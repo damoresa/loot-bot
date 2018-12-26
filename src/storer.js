@@ -51,7 +51,8 @@ const calculateBalance = (hunt, expensesData) => {
         });
     } else {
         data = expensesData.map((expense) => {
-            const percentage = Number((Math.floor(expense.amount / totalExpenses * 100) / 100).toFixed(2));
+            // FIXME: Keep an eye on this Math.round as it may play nasty tricks on some balances. Floor swallowed 1% a couple times :(
+            const percentage = Number((Math.round(expense.amount / totalExpenses * 100) / 100).toFixed(2));
             expense.balance = Math.floor(hunt.loot * percentage);
 
             winston.debug(`Reporter ${expense.reporter} was assigned a ${percentage * 100}% of the loot (${expense.balance})`);
@@ -104,6 +105,7 @@ class Storer {
                 // FIXME: MongoDB aggregated query?
                 balance.balances = hunt.expenses.map((expense) => {
                     return {
+                        amount: expense.amount,
                         balance: expense.balance,
                         reporter: expense.reporter,
                     };

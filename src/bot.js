@@ -62,7 +62,6 @@ const launchDiscordBot = () => {
                         response += `\n`;
                         response += `This hunt has been given the code ${output.code}. If you wish to add expenses to it, use the !expense command.`;
                     }
-
                     message.reply(response);
                 } catch (err) {
                     winston.error(`Unable to store hunt report for user ${message.author.username}: ${err}`);
@@ -84,19 +83,15 @@ const launchDiscordBot = () => {
                     const huntCode = await Parser.parseBalance(message.content);
                     const balance = await Service.calculateBalance(huntCode);
 
-                    const overallBalance = balance.loot - balance.expenses;
                     let response = `The hunt with code ${balance.code} has registered the following data:\n`;
                     response += ` - Loot value: ${balance.loot}\n`;
                     response += ` - Expenses value: ${balance.expenses}\n`;
                     response += `\n`;
-                    response += `The overall balance is ${overallBalance}.\n`;
-                    if (overallBalance > 0) {
-                        response += `The overall balance is ${overallBalance / balance.balances.length}.\n`;
-                    }
+                    response += `The overall balance is ${balance.loot - balance.expenses}.\n`;
                     response += `\n`;
                     response += `The share per reporter is as follows:\n`;
                     for (const share of balance.balances) {
-                        response += ` - ${share.reporter}: ${share.balance}\n`;
+                        response += ` - ${share.reporter}: ${share.balance} (${share.balance - share.amount} balance)\n`;
                     }
 
                     message.reply(response);
