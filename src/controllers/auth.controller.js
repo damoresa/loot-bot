@@ -7,7 +7,7 @@ const jwt = require('jwt-simple');
 const winston = require('winston');
 
 const CONSTANTS = require('./../constants/constants');
-const DiscordApi = require('./../utils/DiscordApi');
+const DiscordService = require('../utils/discord.service');
 const User = require('./../schemas/user.schema');
 
 class AuthController {
@@ -83,7 +83,7 @@ class AuthController {
 
 				const parsedBody = JSON.parse(body);
 
-                DiscordApi.retrieveUserData(parsedBody.access_token).then(
+                DiscordService.retrieveUserData(parsedBody.access_token).then(
                     (userData) => {
                         User.findOne({
 							discord_id: userData.id,

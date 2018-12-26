@@ -1,17 +1,18 @@
 'use strict';
 
+const Promise = require('bluebird');
 const request = require('request');
 const winston = require('winston');
 
-class DiscordApi {
+class DiscordService {
     constructor() {}
 
     retrieveUserData(token) {
 
-        winston.debug(`Retrieving user data from Discord`);
+        winston.debug('Retrieving user data from Discord');
 
         const options = {
-            url: `http://discordapp.com/api/users/@me`,
+            url: 'http://discordapp.com/api/users/@me',
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`
@@ -32,4 +33,4 @@ class DiscordApi {
     }
 }
 
-module.exports = new DiscordApi();
+module.exports = new DiscordService();
