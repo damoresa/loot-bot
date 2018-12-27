@@ -3,6 +3,7 @@
 class ReportModel {
     constructor() {
         this._code;
+        this._pinCode;
         this._damage;
         this._healing;
         this._loot;
@@ -22,6 +23,14 @@ class ReportModel {
 
     set code(code) {
         this._code = code;
+    }
+
+    get pinCode() {
+        return this._pinCode;
+    }
+
+    set pinCode(pinCode) {
+        this._pinCode = pinCode;
     }
 
     get damage() {

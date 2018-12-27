@@ -1,7 +1,6 @@
 'use strict';
 
 const express = require('express');
-const moment = require('moment');
 const winston = require('winston');
 
 const Parser = require('./../parser');
@@ -48,18 +47,19 @@ class ReportsController {
 
         const username = request.user.username;
         const huntCode = request.params.huntId;
-        const expenseData = request.body.expenseData;
+        const expenseAmount = request.body.expenseAmount;
+        const pinCode = request.body.pinCode;
 
-        winston.debug(`${username} is storing: ${expenseData} cost on ${huntCode}`);
+        winston.debug(`${username} is storing: ${expenseAmount} cost on ${huntCode}`);
 
-        Parser.parseWebExpense(username, huntCode, expenseData)
+        Parser.parseWebExpense(username, huntCode, expenseAmount, pinCode)
             .then(Service.saveExpense)
             .then((output) => {
                 response.json({ message: `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.` });
             })
             .catch((error) => {
-                winston.error(`Unable to store expense for user ${username}: ${error}`);
-                response.json({ error: `Something went wrong, please contact an administrator.` });
+                winston.error(`Unable to store expense for user ${username} with pin code ${pinCode}: ${error}`);
+                response.status(500).json({ error: `Unable to store expense, please remember to input the correct pin code. If you don't have one, ask the hunt reporter for it.` });
             });
     }
 
@@ -75,7 +75,7 @@ class ReportsController {
             })
             .catch((error) => {
                 winston.error(`Unable to load hunts for ${user}. Reason: ${error}`);
-                response.json({ error });
+                response.status(500).json({ error });
             });
     }
 
@@ -90,7 +90,7 @@ class ReportsController {
             })
             .catch((error) => {
                 winston.error(`Unable to load hunt with code ${huntId} for user ${user}. Reason: ${error}`);
-                response.json({ error });
+                response.status(500).json({ error });
             });
     }
 

@@ -97,7 +97,7 @@ class AuthController {
                         		if (user) {
                                     winston.debug(`${user.username} found`);
                                     const token = jwt.encode(user, CONSTANTS.JWT.HASH_SECRET);
-                                    response.redirect(`/#/home?token=${token}`);
+                                    response.redirect(`${CONSTANTS.DISCORD.FRONT_REDIRECT_URI}?token=${token}`);
 								} else {
                                     winston.debug(`${userData.username} not found, creating a new user`);
                                     user = new User({
@@ -120,7 +120,7 @@ class AuthController {
                                         } else {
                                             winston.debug('User successfully created ' + JSON.stringify(user));
                                             const token = jwt.encode(user, CONSTANTS.JWT.HASH_SECRET);
-                                            response.redirect(`/#/home?token=${token}`);
+                                            response.redirect(`${CONSTANTS.DISCORD.FRONT_REDIRECT_URI}?token=${token}`);
                                         }
                                     });
 								}

@@ -69,6 +69,14 @@
                     </div>
                   </div>
                   <div class="form-group">
+                    <label for="expensePinCode">Hunt's pin code:</label>
+                    <input type="text" v-model="expense.pinCode" class="form-control" id="expensePinCode" placeholder="1234"/>
+                    <div v-for="error of fieldErrors('expense', 'pinCode')" v-bind:key="error.error"
+                         class="alert alert-danger mt-1" role="alert">
+                      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;{{ error.error }}
+                    </div>
+                  </div>
+                  <div class="form-group">
                     <label for="expenseAmount">Amount spent:</label>
                     <input type="number" v-model="expense.amount" class="form-control" id="expenseAmount" placeholder="Expense"/>
                     <div v-for="error of fieldErrors('expense', 'amount')" v-bind:key="error.error"
@@ -90,6 +98,7 @@
                 <thead>
                 <tr>
                   <th>Code</th>
+                  <th>Pin code</th>
                   <th>Date</th>
                   <th>Experience</th>
                   <th>Loot</th>
@@ -98,10 +107,16 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="hunt of hunts" v-bind:key="hunt.code">
+                <tr v-for="(hunt, huntIdx) of hunts" v-bind:key="hunt.code">
                   <td>
                     <router-link :to="{ path: `/hunts/${hunt.code}` }">{{ hunt.code }}</router-link>
                   </td>
+                  <td v-if="!hunt.displayPinCode">
+                    <span v-on:click="showPinCode(huntIdx)" class="clickable">
+                      <i class="fa fa-search" aria-hidden="true" ></i>&nbsp;Show
+                    </span>
+                  </td>
+                  <td v-if="hunt.displayPinCode">{{ hunt.pinCode }}</td>
                   <td>{{ hunt.date }}</td>
                   <td>{{ hunt.experience }}</td>
                   <td>{{ hunt.loot }}</td>
@@ -147,6 +162,7 @@ export default {
       },
       expense: {
         huntCode: '',
+        pinCode: '',
         amount: 0
       },
       lootData: {
@@ -242,6 +258,12 @@ export default {
           this.forms.expense.errors.push({ field: 'huntCode', error: 'Hunt code must be input.' })
         }
 
+        if (!value.pinCode || value.pinCode === '') {
+          this.forms.expense.errors.push({ field: 'pinCode', error: 'Hunt\'s pin code must be input.' })
+        } else if (isNaN(value.pinCode)) {
+          this.forms.expense.errors.push({ field: 'pinCode', error: 'Hunt\'s pin code must be a number.' })
+        }
+
         if (!value.amount || value.amount === '') {
           this.forms.expense.errors.push({ field: 'amount', error: 'Expense amount must be input.' })
         } else if (isNaN(value.amount) || Number(value.amount) < 0) {
@@ -276,6 +298,9 @@ export default {
       this.endDate = moment(this.startDate).add(1, 'month').format('YYYY-MM-DD')
       this.loadHunts()
     },
+    showPinCode: function (huntIdx) {
+      this.hunts[huntIdx].displayPinCode = true
+    },
     loadHunts: function () {
       axios.get(`/api/reports/hunts`, {
         headers: {
@@ -290,7 +315,10 @@ export default {
           // It's annoying that Axios automatically creates a 'data' node
           const data = response.data
           if (data.data) {
-            this.hunts = data.data.hunts
+            this.hunts = data.data.hunts.map((hunt) => {
+              hunt['displayPinCode'] = false
+              return hunt
+            })
           } else {
             this.errors.push(data.data.error)
           }
@@ -338,7 +366,8 @@ export default {
     },
     submitExpenseData: function () {
       const body = {
-        expenseData: this.expense.amount
+        expenseAmount: this.expense.amount,
+        pinCode: this.expense.pinCode
       }
       axios.post(`/api/reports/hunts/${this.expense.huntCode}/expense`, body, {
         headers: {
@@ -353,7 +382,7 @@ export default {
           }
         })
         .catch(error => {
-          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store expense: ${error}` })
+          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store expense: ${error.response.data.error}` })
         })
     },
     submitLootData: function () {
@@ -373,7 +402,7 @@ export default {
           }
         })
         .catch(error => {
-          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store report: ${error}` })
+          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store report: ${error.response.data.error}` })
         })
     }
   }
@@ -383,5 +412,8 @@ export default {
 <style scoped>
 .lb-action-btn {
   margin: 0 .2rem;
+}
+.clickable {
+  cursor: pointer;
 }
 </style>

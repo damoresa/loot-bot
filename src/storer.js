@@ -198,7 +198,7 @@ class Storer {
          */
         winston.debug(`Registering expense ${JSON.stringify(expense)}`);
         try {
-            const hunt = await Hunt.findOne({ 'code': expense.code });
+            const hunt = await Hunt.findOne({ 'code': expense.code, 'pinCode': expense.pinCode });
 
             if (hunt) {
                 const parsedExpense = parseExpense(expense);
@@ -263,7 +263,7 @@ class Storer {
                 // Return something
                 return true;
             } else {
-                throw Error(`Unable to find hunt with code ${expense.code}`);
+                throw Error(`Unable to find hunt with code ${expense.code} and pin ${expense.pinCode}`);
             }
         } catch (err) {
             throw err;
@@ -307,7 +307,7 @@ class Storer {
 
             await hunt.save();
             winston.debug(`Hunt data stored with code ${code}`);
-            return code;
+            return { code, pinCode: hunt.pinCode };
         } catch (err) {
             winston.error(`Unable to persist hunt: ${err}`);
             throw err;

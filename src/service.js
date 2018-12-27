@@ -134,6 +134,7 @@ class HuntService {
                 const reporterExpense = hunt.expenses.find((expense) => expense.reporter === username);
                 return {
                     code: hunt.code,
+                    pinCode: hunt.pinCode,
                     date: moment(hunt.date).format('DD/MM/YYYY HH:mm'),
                     experience: hunt.experience,
                     share: reporterExpense.balance,
@@ -183,8 +184,9 @@ class HuntService {
         winston.info(`Storing report ${JSON.stringify(report)}.`);
 
         try {
-            const code = await Storer.persistLoot(report);
-            report.code = code;
+            const result = await Storer.persistLoot(report);
+            report.code = result.code;
+            report.pinCode = result.pinCode;
             return report;
         } catch (err) {
             throw err;

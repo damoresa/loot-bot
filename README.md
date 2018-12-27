@@ -22,15 +22,16 @@ Your share of the loot is calculated following these steps:
 
 1. Sum all the reported expenses for the hunt.
 1. Calculate whether the total loot value is higher than the total expenses value.
-   1. If the loot is higher (profit) - everyone is given their expense and then the remainder is shared evenly.
-   1. If the expenses are higher (waste) - everyone is given a percentage or the loot proportional to their reported expense.
+   1. If the loot is higher (_profit_) - everyone is given their expense and then the remainder is shared evenly.
+   1. If the expenses are higher (_waste_) - everyone is given a percentage or the loot proportional to their reported expense.
 
 ### Future features
 
 - [x] Submit loot reports through the web application.
 - [x] Submit expenses through the web application.
-- [ ] Generate a pin code for hunts s only "_authorized_" persons can submit expenses.
-- [ ] Profit per reporter on balance.
+- [x] Balance per reporter on hunt balance request.
+- [ ] Mark hunts as paid.
+- [x] Generate a pin code for hunts so only "_authorized_" persons can submit expenses.
 
 ### Possible future features
 

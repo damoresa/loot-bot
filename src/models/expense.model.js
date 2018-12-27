@@ -4,6 +4,7 @@ class ExpenseModel {
     constructor() {
         this._amount;
         this._code;
+        this._pinCode;
         this._reporter;
     }
 
@@ -21,6 +22,14 @@ class ExpenseModel {
 
     set code(code) {
         this._code = code;
+    }
+
+    get pinCode() {
+        return this._pinCode;
+    }
+
+    set pinCode(pinCode) {
+        this._pinCode = pinCode;
     }
 
     get reporter() {

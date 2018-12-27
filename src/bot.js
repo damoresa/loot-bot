@@ -25,7 +25,7 @@ const launchDiscordBot = () => {
                 // TODO: Use Markdown - https://support.discordapp.com/hc/es/articles/210298617-Markdown-de-texto-b%C3%A1sico-Formato-de-Chat-Negrilla-It%C3%A1lico-Subrayado-
                 let response = `The following commands are available:\n`;
                 response += ` - !loot LOOTPASTE : records the given loot data on the database. A reply with the hunt code is generated aswell.\n`;
-                response += ` - !expense HUNTCODE AMOUNT : records the given supplies expense to the hunt with the given code. Your Discord user is used to keep track of who reported the expense.\n`;
+                response += ` - !expense HUNTCODE AMOUNT PINCODE : records the given supplies expense to the hunt with the given code and pin code. Your Discord user is used to keep track of who reported the expense.\n`;
                 response += ` - !balance HUNTCODE : displays the money balance for the given hunt code aswell as who reported expenses.\n`;
                 response += ` - !monthxp : displays the amount of experience obtained by the user executing the command.\n`;
                 response += ` - !monthhunts : displays the recorded hunts during this month with participants.\n`;
@@ -62,7 +62,12 @@ const launchDiscordBot = () => {
                         response += `\n`;
                         response += `This hunt has been given the code ${output.code}. If you wish to add expenses to it, use the !expense command.`;
                     }
+
+                    const reporterMessage = `The pincode for your hunt ${output.code} is ${output.pinCode}.\nRemember to keep this code private to your party members.`;
+
                     message.reply(response);
+                    const reporterChannel = await message.author.createDM();
+                    reporterChannel.send(reporterMessage);
                 } catch (err) {
                     winston.error(`Unable to store hunt report for user ${message.author.username}: ${err}`);
                     message.reply('Unable to store hunt report.');
@@ -76,7 +81,7 @@ const launchDiscordBot = () => {
                     message.reply(response);
                 } catch (err) {
                     winston.error(`Unable to store expense for user ${message.author.username}: ${err}`);
-                    message.reply(`Something went wrong, please contact an administrator.`);
+                    message.reply('Unable to store expense, please remember to input the correct pin code.\nIf you don\'t have one, ask the hunt reporter for it.');
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.BALANCE.test(message.content)) {
                 try {
