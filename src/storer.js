@@ -199,12 +199,13 @@ class Storer {
                         amount: expenseData.amount,
                         balance: expenseData.balance,
                         reporter: expenseData.reporter,
+                        reporterId: expenseData.reporterId,
                     };
                 });
 
                 winston.debug(`Current data: ${JSON.stringify(currentData)}`);
 
-                const expenseExists = currentData.find((data) => data.reporter === parsedExpense.reporter);
+                const expenseExists = currentData.find((data) => data.reporterId === parsedExpense.reporterId);
 
                 let calculatedData;
                 if (expenseExists) {
@@ -212,7 +213,7 @@ class Storer {
 
                     // Update the existing data
                     currentData.forEach((entry) => {
-                        if (entry.reporter === parsedExpense.reporter) {
+                        if (entry.reporterId === parsedExpense.reporterId) {
                             entry.amount = parsedExpense.amount;
                             entry.balance = 0;
                         }
@@ -227,7 +228,8 @@ class Storer {
                     currentData.push({
                         amount: parsedExpense.amount,
                         balance: 0,
-                        reporter: parsedExpense.reporter
+                        reporter: parsedExpense.reporter,
+                        reporterId: parsedExpense.reporterId,
                     });
                     hunt.expenses.push(parsedExpense);
 
@@ -238,7 +240,7 @@ class Storer {
                 // Apply the calculated data
                 winston.debug(`Calculated balance: ${JSON.stringify(calculatedData)}`);
                 hunt.expenses.forEach((expenseData) => {
-                    const reporterData = calculatedData.find((data) => data.reporter === expenseData.reporter);
+                    const reporterData = calculatedData.find((data) => data.reporterId === expenseData.reporterId);
                     expenseData.amount = reporterData.amount;
                     expenseData.balance = reporterData.balance;
                 });

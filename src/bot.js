@@ -74,7 +74,7 @@ const launchDiscordBot = () => {
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.EXPENSE.test(message.content)) {
                 try {
-                    const expenseReport = await Parser.parseExpense(message.author.username, message.content);
+                    const expenseReport = await Parser.parseExpense(message.author.username, message.author.id, message.content);
                     const output = await Service.saveExpense(expenseReport);
 
                     const response = `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.`;

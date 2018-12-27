@@ -46,13 +46,14 @@ class ReportsController {
     addExpense(request, response) {
 
         const username = request.user.username;
+        const userId = request.user.discord_id;
         const huntCode = request.params.huntId;
         const expenseAmount = request.body.expenseAmount;
         const pinCode = request.body.pinCode;
 
         winston.debug(`${username} is storing: ${expenseAmount} cost on ${huntCode}`);
 
-        Parser.parseWebExpense(username, huntCode, expenseAmount, pinCode)
+        Parser.parseWebExpense(username, userId, huntCode, expenseAmount, pinCode)
             .then(Service.saveExpense)
             .then((output) => {
                 response.json({ message: `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.` });

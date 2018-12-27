@@ -45,12 +45,12 @@ class Parser {
         });
     }
 
-    parseExpense(reporter, content) {
+    parseExpense(reporter, reporterId, content) {
         return new Promise((resolve, reject) => {
             try {
                 const match = CONSTANTS.COMMANDS_REGEXP.EXPENSE.exec(content);
                 if (match) {
-                    const expense = this._parseExpenseContent(reporter, match[1], match[2], match[3]);
+                    const expense = this._parseExpenseContent(reporter, reporterId, match[1], match[2], match[3]);
 
                     resolve(expense);
                 } else {
@@ -62,10 +62,10 @@ class Parser {
         });
     }
 
-    parseWebExpense(reporter, huntCode, expenseData, pinCode) {
+    parseWebExpense(reporter, reporterId, huntCode, expenseData, pinCode) {
         return new Promise((resolve, reject) => {
             try {
-                const expense = this._parseExpenseContent(reporter, huntCode, expenseData, pinCode);
+                const expense = this._parseExpenseContent(reporter, reporterId, huntCode, expenseData, pinCode);
 
                 resolve(expense);
             } catch (err) {
@@ -125,12 +125,13 @@ class Parser {
         });
     }
 
-    _parseExpenseContent(reporter, huntCode, expenseAmount, pinCode) {
+    _parseExpenseContent(reporter, reporterId, huntCode, expenseAmount, pinCode) {
         const expense = new ExpenseModel();
         expense.amount = expenseAmount;
         expense.code = huntCode;
         expense.pinCode = pinCode;
         expense.reporter = reporter;
+        expense.reporterId = reporterId;
 
         return expense;
     }

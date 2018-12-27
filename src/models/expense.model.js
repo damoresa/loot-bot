@@ -6,6 +6,7 @@ class ExpenseModel {
         this._code;
         this._pinCode;
         this._reporter;
+        this._reporterId;
     }
 
     get amount() {
@@ -38,6 +39,14 @@ class ExpenseModel {
 
     set reporter(reporter) {
         this._reporter = reporter;
+    }
+
+    get reporterId() {
+        return this._reporterId;
+    }
+
+    set reporterId(reporterId) {
+        this._reporterId = reporterId;
     }
 }
 
