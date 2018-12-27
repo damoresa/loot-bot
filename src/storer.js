@@ -75,21 +75,12 @@ const parseMonsters = (monsters) => {
 
 class Storer {
     constructor() {
-        this.generateCode.bind(this);
         this.getBalanceData.bind(this);
         this.getHuntByCode.bind(this);
         this.getHuntsByUser.bind(this);
         this.getMonthHunts.bind(this);
         this.persistExpense.bind(this);
         this.persistLoot.bind(this);
-    }
-
-    generateCode() {
-        // https://gist.github.com/gordonbrander/2230317
-        // Math.random should be unique because of its seeding algorithm.
-        // Convert it to base 36 (numbers + letters), and grab the first 9 characters
-        // after the decimal.
-        return '_' + Math.random().toString(36).substr(2, 9);
     }
 
     async getBalanceData(code) {
@@ -274,8 +265,6 @@ class Storer {
         winston.debug(`Storing loot information.`);
 
         try {
-            // Unique code
-            const code = this.generateCode();
             // MomentJS for date management
             const startTime = moment(report.sessionStartTime, 'YYYY-MM-DD HH:mm:ss');
             // Duration to MS
@@ -294,7 +283,6 @@ class Storer {
             winston.debug(`Session duration (MS) ${duration}`);
 
             const hunt = new Hunt();
-            hunt.code = code;
             hunt.date = startTime;
             hunt.duration = duration;
             hunt.damage = report.damage;
@@ -307,7 +295,7 @@ class Storer {
 
             await hunt.save();
             winston.debug(`Hunt data stored with code ${code}`);
-            return { code, pinCode: hunt.pinCode };
+            return { code: hunt.code, pinCode: hunt.pinCode };
         } catch (err) {
             winston.error(`Unable to persist hunt: ${err}`);
             throw err;

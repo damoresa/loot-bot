@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const {generateRandomPinCode} = require('./../utils/common.functions');
+const {generateHuntCode, generateRandomPinCode} = require('./../utils/common.functions');
 const CONSTANTS = require('./../constants/constants');
 
 const expenseSchema = mongoose.model('Expense').schema;
@@ -25,10 +25,11 @@ const huntSchema = new Schema({
     expenses: [expenseSchema]
 });
 
-// Generate a pin code for the hunt before persisting it
-// This has to be done before validation happens since the pinCode is required
+// Generate a hunt and a pin code for the hunt before persisting it
+// This has to be done before validation happens since both codes are required
 huntSchema.pre('validate', function () {
     if (this.isNew) {
+        this.code = generateHuntCode();
         this.pinCode = generateRandomPinCode(CONSTANTS.PINCODE_LENGTH);
     }
 });
