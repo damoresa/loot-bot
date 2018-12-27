@@ -114,33 +114,33 @@ class Storer {
         }
     }
 
-    async getHuntByCode(username, huntCode) {
-        winston.debug(`Retrieving hunt ${huntCode} for user ${username}`);
+    async getHuntByCode(userId, huntCode) {
+        winston.debug(`Retrieving hunt ${huntCode} for user ${userId}`);
 
         try {
             const query = {
                 'code': huntCode,
-                'expenses.reporter': username,
+                'expenses.reporterId': userId,
             };
 
             const hunt = await Hunt.findOne(query);
             if (hunt) {
                 return hunt;
             } else {
-                throw Error(`Unable to find hunt with code ${huntCode} and reporter ${username}`);
+                throw Error(`Unable to find hunt with code ${huntCode} and reporter ${userId}`);
             }
         } catch (err) {
             throw err;
         }
     }
 
-    async getHuntsByUser(username, startDate, endDate) {
-        winston.debug(`Retrieving hunts for user ${username}`);
+    async getHuntsByUser(userId, startDate, endDate) {
+        winston.debug(`Retrieving hunts for user ${userId}`);
         winston.debug(`Date range: ${startDate} -> ${endDate}`);
 
         try {
             const query = {
-                'expenses.reporter': username,
+                'expenses.reporterId': userId,
             };
 
             if (startDate && endDate) {

@@ -67,15 +67,16 @@ class ReportsController {
     loadHunts(request, response) {
 
         const username = request.user.username;
+        const userId = request.user.discord_id;
         const startDate = request.query.startDate;
         const endDate = request.query.endDate;
 
-        Service.getUserHuntsData(username, startDate, endDate)
+        Service.getUserHuntsData(userId, startDate, endDate)
             .then((data) => {
                 response.json({ data });
             })
             .catch((error) => {
-                winston.error(`Unable to load hunts for ${user}. Reason: ${error}`);
+                winston.error(`Unable to load hunts for ${username}. Reason: ${error}`);
                 response.status(500).json({ error });
             });
     }
@@ -83,14 +84,15 @@ class ReportsController {
     loadHunt(request, response) {
 
         const username = request.user.username;
+        const userId = request.user.discord_id;
 		const huntId = request.params.huntId;
 
-        Service.getHuntById(username, huntId)
+        Service.getHuntById(userId, huntId)
             .then((data) => {
                 response.json({ data });
             })
             .catch((error) => {
-                winston.error(`Unable to load hunt with code ${huntId} for user ${user}. Reason: ${error}`);
+                winston.error(`Unable to load hunt with code ${huntId} for user ${username}. Reason: ${error}`);
                 response.status(500).json({ error });
             });
     }

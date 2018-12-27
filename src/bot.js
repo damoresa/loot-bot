@@ -106,7 +106,7 @@ const launchDiscordBot = () => {
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHXP.test(message.content)) {
                 try {
-                    const output = await Service.calculateMonthExp(message.author.username);
+                    const output = await Service.calculateMonthExp(message.author.id);
 
                     let response;
                     if (output === 0) {
@@ -147,7 +147,7 @@ const launchDiscordBot = () => {
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.MONTHBALANCE.test(message.content)) {
                 try {
-                    const output = await Service.calculateMonthBalance(message.author.username);
+                    const output = await Service.calculateMonthBalance(message.author.id);
 
                     let response;
                     if (output.expenses === 0 && output.loot === 0) {

@@ -31,24 +31,24 @@ class HuntService {
         }
     }
 
-    async calculateMonthBalance(username) {
-        winston.info(`Generating month balance for user ${username}.`);
+    async calculateMonthBalance(userId) {
+        winston.info(`Generating month balance for user ${userId}.`);
 
         try {
             const month = moment().startOf('month');
             const nextMonth = moment(month).add(1, 'month');
 
-            const hunts = await Storer.getHuntsByUser(username, month, nextMonth);
+            const hunts = await Storer.getHuntsByUser(userId, month, nextMonth);
             const monthBalance = new MonthBalanceModel();
             const expensesValue = hunts.reduce((expenses, hunt) => {
-                return expenses.concat(hunt.expenses.filter((expense) => expense.reporter === username));
+                return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
             }, []).reduce((cost, expense) => {
                 return cost + expense.amount;
             }, 0);
 
             // Use the balance calculated field
             const lootValue = hunts.reduce((expenses, hunt) => {
-                return expenses.concat(hunt.expenses.filter((expense) => expense.reporter === username));
+                return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
             }, []).reduce((loot, expense) => {
                 const balanceValue = expense.balance ? expense.balance : 0;
 
@@ -63,14 +63,14 @@ class HuntService {
         }
     }
 
-    async calculateMonthExp(username) {
-        winston.info(`Generating month experience report for user ${username}.`);
+    async calculateMonthExp(userId) {
+        winston.info(`Generating month experience report for user ${userId}.`);
 
         try {
             const month = moment().startOf('month');
             const nextMonth = moment(month).add(1, 'month');
 
-            const hunts = await Storer.getHuntsByUser(username, month, nextMonth);
+            const hunts = await Storer.getHuntsByUser(userId, month, nextMonth);
             const totalxp = hunts.reduce((previousVal, hunt) => {
                 return previousVal + hunt.experience;
             }, 0);
@@ -80,18 +80,18 @@ class HuntService {
         }
     }
 
-    async getHuntById(username, huntCode) {
-        winston.info(`Generating hunt ${huntCode} report user ${username}.`);
+    async getHuntById(userId, huntCode) {
+        winston.info(`Generating hunt ${huntCode} report user ${userId}.`);
 
         try {
-            const hunt = await Storer.getHuntByCode(username, huntCode);
+            const hunt = await Storer.getHuntByCode(userId, huntCode);
             const huntReportModel = new SingleHuntReportModel();
 
             huntReportModel.code = hunt.code;
             huntReportModel.date = moment(hunt.date).format('DD/MM/YYYY HH:mm');
             huntReportModel.experience = hunt.experience;
             huntReportModel.loot = hunt.loot;
-            huntReportModel.share = hunt.expenses.find((expense) => expense.reporter === username).balance;
+            huntReportModel.share = hunt.expenses.find((expense) => expense.reporterId === userId).balance;
             huntReportModel.expenses = hunt.expenses.reduce((aggregate, expense) => {
                 return aggregate + expense.amount;
             }, 0);
@@ -111,6 +111,7 @@ class HuntService {
                 return {
                     amount: expense.amount,
                     reporter: expense.reporter,
+                    reporterId: expense.reporterId,
                 };
             });
 
@@ -120,18 +121,18 @@ class HuntService {
         }
     }
 
-    async getUserHuntsData(username, startDate, endDate) {
-        winston.info(`Generating hunts report user ${username}.`);
+    async getUserHuntsData(userId, startDate, endDate) {
+        winston.info(`Generating hunts report user ${userId}.`);
 
         try {
             const initDate = startDate ? moment(startDate, 'YYYY/MM/DD') : undefined;
             const lastDate = endDate ? moment(endDate, 'YYYY/MM/DD') : undefined;
 
-            const hunts = await Storer.getHuntsByUser(username, initDate, lastDate);
+            const hunts = await Storer.getHuntsByUser(userId, initDate, lastDate);
 
             const huntsReportModel = new HuntsReportModel();
             huntsReportModel.hunts = hunts.map((hunt) => {
-                const reporterExpense = hunt.expenses.find((expense) => expense.reporter === username);
+                const reporterExpense = hunt.expenses.find((expense) => expense.reporterId === userId);
                 return {
                     code: hunt.code,
                     pinCode: hunt.pinCode,
