@@ -1,3 +1,5 @@
+'use strict';
+
 class ReportDetailModel {
     constructor() {
         this._amount;

@@ -1,3 +1,5 @@
+'use strict';
+
 const btoa = require('btoa');
 const express = require('express');
 const Request = require('request');
@@ -5,7 +7,7 @@ const jwt = require('jwt-simple');
 const winston = require('winston');
 
 const CONSTANTS = require('./../constants/constants');
-const DiscordApi = require('./../utils/DiscordApi');
+const DiscordService = require('../utils/discord.service');
 const User = require('./../schemas/user.schema');
 
 class AuthController {
@@ -81,7 +83,7 @@ class AuthController {
 
 				const parsedBody = JSON.parse(body);
 
-                DiscordApi.retrieveUserData(parsedBody.access_token).then(
+                DiscordService.retrieveUserData(parsedBody.access_token).then(
                     (userData) => {
                         User.findOne({
 							discord_id: userData.id,
@@ -95,7 +97,7 @@ class AuthController {
                         		if (user) {
                                     winston.debug(`${user.username} found`);
                                     const token = jwt.encode(user, CONSTANTS.JWT.HASH_SECRET);
-                                    response.redirect(`/#/home?token=${token}`);
+                                    response.redirect(`${CONSTANTS.DISCORD.FRONT_REDIRECT_URI}?token=${token}`);
 								} else {
                                     winston.debug(`${userData.username} not found, creating a new user`);
                                     user = new User({
@@ -118,7 +120,7 @@ class AuthController {
                                         } else {
                                             winston.debug('User successfully created ' + JSON.stringify(user));
                                             const token = jwt.encode(user, CONSTANTS.JWT.HASH_SECRET);
-                                            response.redirect(`/#/home?token=${token}`);
+                                            response.redirect(`${CONSTANTS.DISCORD.FRONT_REDIRECT_URI}?token=${token}`);
                                         }
                                     });
 								}

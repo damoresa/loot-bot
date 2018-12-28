@@ -1,3 +1,5 @@
+'use strict';
+
 const moment = require('moment');
 const winston = require('winston');
 
@@ -17,206 +19,195 @@ class HuntService {
         this.retrieveMonthHunts.bind(this);
         this.saveExpense.bind(this);
         this.saveLoot.bind(this);
+        this.savePayment.bind(this);
     }
 
-    calculateBalance(huntCode) {
-        return new Promise((resolve, reject) => {
-            winston.info(`Generating balance report for hunt ${huntCode}.`);
+    async calculateBalance(huntCode) {
+        winston.info(`Generating balance report for hunt ${huntCode}.`);
 
-            Storer.getBalanceData(huntCode).then(
-                (balance) => {
-                    resolve(balance);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
+        try {
+            return await Storer.getBalanceData(huntCode);
+        } catch (err) {
+            throw err;
+        }
     }
 
-    calculateMonthBalance(username) {
-        return new Promise((resolve, reject) => {
-            // FIXME: Add date filters so this becomes month data instead of overall data
-            winston.info(`Generating month balance for user ${username}.`);
+    async calculateMonthBalance(userId) {
+        winston.info(`Generating month balance for user ${userId}.`);
 
-            Storer.getHuntsByUser(username).then(
-                (hunts) => {
-                    const monthBalance = new MonthBalanceModel();
-
-                    const expensesValue = hunts.reduce((expenses, hunt) => {
-                        return expenses.concat(hunt.expenses.filter((expense) => expense.reporter === username));
-                    }, []).reduce((cost, expense) => {
-                        return cost + expense.amount;
-                    }, 0);
-					
-					// Use the balance calculated field
-                    const lootValue = hunts.reduce((expenses, hunt) => {
-                        return expenses.concat(hunt.expenses.filter((expense) => expense.reporter === username));
-                    }, []).reduce((loot, expense) => {
-						const balanceValue = expense.balance ? expense.balance : 0;
-						
-                        return loot + balanceValue;
-                    }, 0);
-                    monthBalance.expenses = expensesValue;
-                    monthBalance.loot = lootValue;
-
-                    resolve(monthBalance);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
-    }
-
-    calculateMonthExp(username) {
-        return new Promise((resolve, reject) => {
-            winston.info(`Generating month experience report for user ${username}.`);
-
+        try {
             const month = moment().startOf('month');
             const nextMonth = moment(month).add(1, 'month');
 
-            Storer.getHuntsByUser(username, month, nextMonth).then(
-                (hunts) => {
-                    const totalxp = hunts.reduce((previousVal, hunt) => {
-                        return previousVal + hunt.experience;
-                    }, 0);
-                    resolve(totalxp);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
+            const hunts = await Storer.getHuntsByUser(userId, month, nextMonth);
+            const monthBalance = new MonthBalanceModel();
+            const expensesValue = hunts.reduce((expenses, hunt) => {
+                return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
+            }, []).reduce((cost, expense) => {
+                return cost + expense.amount;
+            }, 0);
+
+            // Use the balance calculated field
+            const lootValue = hunts.reduce((expenses, hunt) => {
+                return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
+            }, []).reduce((loot, expense) => {
+                const balanceValue = expense.balance ? expense.balance : 0;
+
+                return loot + balanceValue;
+            }, 0);
+            monthBalance.expenses = expensesValue;
+            monthBalance.loot = lootValue;
+
+            return monthBalance;
+        } catch (err) {
+            throw err;
+        }
     }
-	
-	getHuntById(username, huntCode) {
-        return new Promise((resolve, reject) => {
-            winston.info(`Generating hunt ${huntCode} report user ${username}.`);
 
-            Storer.getHuntByCode(username, huntCode)
-                .then((hunt) => {
-                    const huntReportModel = new SingleHuntReportModel();
+    async calculateMonthExp(userId) {
+        winston.info(`Generating month experience report for user ${userId}.`);
 
-					huntReportModel.code = hunt.code;
-					huntReportModel.date = moment(hunt.date).format('DD/MM/YYYY HH:mm');
-					huntReportModel.experience = hunt.experience;
-					huntReportModel.loot = hunt.loot;
-					huntReportModel.share = hunt.expenses.find((expense) => expense.reporter === username).balance;
-					huntReportModel.expenses = hunt.expenses.reduce((aggregate, expense) => {
-							return aggregate + expense.amount;
-					}, 0);
-					huntReportModel.items = hunt.items.map((item) => {
-						return {
-							amount: item.amount,
-							name: item.name,
-						};
-					});
-					huntReportModel.monsters = hunt.monsters.map((monster) => {
-						return {
-							amount: monster.amount,
-							name: monster.name,
-						};
-					});
-					huntReportModel.reporters = hunt.expenses.map((expense) => {
-						return {
-							amount: expense.amount,
-							reporter: expense.reporter,
-						};
-					});
+        try {
+            const month = moment().startOf('month');
+            const nextMonth = moment(month).add(1, 'month');
 
-                    resolve(huntReportModel);
-                })
-                .catch((error) => {
-                    reject(error);
-                });
-		});
-	}
+            const hunts = await Storer.getHuntsByUser(userId, month, nextMonth);
+            const totalxp = hunts.reduce((previousVal, hunt) => {
+                return previousVal + hunt.experience;
+            }, 0);
+            return totalxp;
+        } catch (err) {
+            throw err;
+        }
+    }
 
-    getUserHuntsData(username, startDate, endDate) {
-        return new Promise((resolve, reject) => {
-            winston.info(`Generating hunts report user ${username}.`);
+    async getHuntById(userId, huntCode) {
+        winston.info(`Generating hunt ${huntCode} report user ${userId}.`);
 
+        try {
+            const hunt = await Storer.getHuntByCode(userId, huntCode);
+            const huntReportModel = new SingleHuntReportModel();
+
+            huntReportModel.code = hunt.code;
+            huntReportModel.pinCode = hunt.pinCode;
+            huntReportModel.date = moment(hunt.date).format('DD/MM/YYYY HH:mm');
+            huntReportModel.experience = hunt.experience;
+            huntReportModel.loot = hunt.loot;
+            huntReportModel.paid = hunt.paid;
+            huntReportModel.share = hunt.expenses.find((expense) => expense.reporterId === userId).balance;
+            huntReportModel.expenses = hunt.expenses.reduce((aggregate, expense) => {
+                return aggregate + expense.amount;
+            }, 0);
+            huntReportModel.items = hunt.items.map((item) => {
+                return {
+                    amount: item.amount,
+                    name: item.name,
+                };
+            });
+            huntReportModel.monsters = hunt.monsters.map((monster) => {
+                return {
+                    amount: monster.amount,
+                    name: monster.name,
+                };
+            });
+            // We do not send the reporterIds on this request to avoid leaking users' Discord id
+            huntReportModel.reporters = hunt.expenses.map((expense) => {
+                return {
+                    amount: expense.amount,
+                    balance: expense.balance,
+                    reporter: expense.reporter,
+                };
+            });
+
+            return huntReportModel;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async getUserHuntsData(userId, startDate, endDate, huntPaid) {
+        winston.info(`Generating hunts report user ${userId}.`);
+
+        try {
             const initDate = startDate ? moment(startDate, 'YYYY/MM/DD') : undefined;
             const lastDate = endDate ? moment(endDate, 'YYYY/MM/DD') : undefined;
 
-            Storer.getHuntsByUser(username, initDate, lastDate)
-                .then((hunts) => {
-                    const huntsReportModel = new HuntsReportModel();
+            const hunts = await Storer.getHuntsByUser(userId, initDate, lastDate, huntPaid);
 
-                    huntsReportModel.hunts = hunts.map((hunt) => {
-						const reporterExpense = hunt.expenses.find((expense) => expense.reporter === username);
-                        return {
-                            code: hunt.code,
-                            date: moment(hunt.date).format('DD/MM/YYYY HH:mm'),
-                            experience: hunt.experience,
-							share: reporterExpense.balance,
-                            loot: hunt.loot,
-                            expenses: reporterExpense.amount,
-                        }
-                    });
+            const huntsReportModel = new HuntsReportModel();
+            huntsReportModel.hunts = hunts.map((hunt) => {
+                const reporterExpense = hunt.expenses.find((expense) => expense.reporterId === userId);
+                return {
+                    code: hunt.code,
+                    pinCode: hunt.pinCode,
+                    date: moment(hunt.date).format('DD/MM/YYYY HH:mm'),
+                    experience: hunt.experience,
+                    share: reporterExpense.balance,
+                    loot: hunt.loot,
+                    expenses: reporterExpense.amount,
+                    paid: hunt.paid
+                };
+            });
 
-                    resolve(huntsReportModel);
-                })
-                .catch((error) => {
-                    reject(error);
+            return huntsReportModel;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async retrieveMonthHunts() {
+        winston.info('Generating hunts report for this month.');
+
+        try {
+            const hunts = await Storer.getMonthHunts();
+            const monthHunts = hunts.map((hunt) => {
+                const monthHunt = new MonthHuntModel();
+                monthHunt.code = hunt.code;
+                monthHunt.date = moment(hunt.date).format('DD/MM/YYYY HH:mm:ss');
+                monthHunt.participants = hunt.expenses.map((expense) => {
+                    return expense.reporter;
                 });
-        });
+                return monthHunt;
+            });
+            return monthHunts;
+        } catch (err) {
+            throw err;
+        }
     }
 
-    retrieveMonthHunts() {
-        return new Promise((resolve, reject) => {
-            winston.info('Generating hunts report for this month.');
+    async saveExpense(expense) {
+        winston.info(`Storing expense ${JSON.stringify(expense)}.`);
 
-            Storer.getMonthHunts().then(
-                (hunts) => {
-                    const monthHunts = hunts.map((hunt) => {
-                        const monthHunt = new MonthHuntModel();
-                        monthHunt.code = hunt.code;
-                        monthHunt.date = moment(hunt.date).format('DD/MM/YYYY HH:mm:ss');
-                        monthHunt.participants = hunt.expenses.map((expense) => {
-                            return expense.reporter;
-                        });
-                        return monthHunt;
-                    });
-                    resolve(monthHunts);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
+        try {
+            await Storer.persistExpense(expense);
+            return expense;
+        } catch (err) {
+            throw err;
+        }
     }
 
-    saveExpense(expense) {
-        return new Promise((resolve, reject) => {
-            winston.info(`Storing expense ${JSON.stringify(expense)}.`);
+    async saveLoot(report) {
+        winston.info(`Storing report ${JSON.stringify(report)}.`);
 
-            Storer.persistExpense(expense).then(
-                () => {
-                    resolve(expense);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
+        try {
+            const result = await Storer.persistLoot(report);
+            report.code = result.code;
+            report.pinCode = result.pinCode;
+            return report;
+        } catch (err) {
+            throw err;
+        }
     }
 
-    saveLoot(report) {
-        return new Promise((resolve, reject) => {
-            winston.info(`Storing report ${JSON.stringify(report)}.`);
+    async savePayment(payment) {
+        winston.info(`Storing payment ${JSON.stringify(payment)}.`);
 
-            Storer.persistLoot(report).then(
-                (code) => {
-                    report.code = code;
-                    resolve(report);
-                },
-                (error) => {
-                    reject(error);
-                }
-            );
-        });
+        try {
+            await Storer.persistPayment(payment);
+            return payment;
+        } catch (err) {
+            throw err;
+        }
     }
 }
 

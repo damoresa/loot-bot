@@ -11,6 +11,18 @@
           <label for="endDate" class="col-md-2 col-form-label">End date</label>
           <input type="date" id="endDate" class="col-md-3 form-control" v-model="endDate">
         </div>
+        <div class="form-group">
+          <div class="form-check">
+            <label for="huntPaid" class="col-md-2 form-check-label">Paid</label>
+            <input type="checkbox" id="huntPaid" class="form-check-input" v-model="huntPaid">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <label for="huntUnpaid" class="col-md-2 form-check-label">Unpaid</label>
+            <input type="checkbox" id="huntUnpaid" class="form-check-input" v-model="huntUnpaid">
+          </div>
+        </div>
         <div class="offset-md-6 col-md-6 d-flex justify-content-end">
           <button type="button" class="btn btn-secondary mr-2" v-on:click="reset">Reset</button>
           <button type="button" class="btn btn-primary" v-on:click="filter">Filter</button>
@@ -69,6 +81,14 @@
                     </div>
                   </div>
                   <div class="form-group">
+                    <label for="expensePinCode">Hunt's pin code:</label>
+                    <input type="text" v-model="expense.pinCode" class="form-control" id="expensePinCode" placeholder="1234"/>
+                    <div v-for="error of fieldErrors('expense', 'pinCode')" v-bind:key="error.error"
+                         class="alert alert-danger mt-1" role="alert">
+                      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;{{ error.error }}
+                    </div>
+                  </div>
+                  <div class="form-group">
                     <label for="expenseAmount">Amount spent:</label>
                     <input type="number" v-model="expense.amount" class="form-control" id="expenseAmount" placeholder="Expense"/>
                     <div v-for="error of fieldErrors('expense', 'amount')" v-bind:key="error.error"
@@ -90,23 +110,37 @@
                 <thead>
                 <tr>
                   <th>Code</th>
+                  <th>Pin code</th>
                   <th>Date</th>
                   <th>Experience</th>
                   <th>Loot</th>
                   <th>Expenses</th>
                   <th>Share</th>
+                  <th>Pay</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="hunt of hunts" v-bind:key="hunt.code">
+                <tr v-for="(hunt, huntIdx) of hunts" v-bind:key="hunt.code">
                   <td>
                     <router-link :to="{ path: `/hunts/${hunt.code}` }">{{ hunt.code }}</router-link>
                   </td>
+                  <td v-if="!hunt.displayPinCode">
+                    <span v-on:click="showPinCode(huntIdx)" class="clickable">
+                      <i class="fa fa-search" aria-hidden="true" ></i>&nbsp;Show
+                    </span>
+                  </td>
+                  <td v-if="hunt.displayPinCode">{{ hunt.pinCode }}</td>
                   <td>{{ hunt.date }}</td>
                   <td>{{ hunt.experience }}</td>
                   <td>{{ hunt.loot }}</td>
                   <td>{{ hunt.expenses }}</td>
                   <td>{{ hunt.share }}</td>
+                  <td>
+                    <span v-if="!hunt.paid" v-on:click="submitPaymentData(hunt.code)" class="clickable">
+                      <i class="fa fa-shopping-cart" aria-hidden="true" ></i>&nbsp;Mark paid
+                    </span>
+                    <span v-if="hunt.paid">Paid</span>
+                  </td>
                 </tr>
                 </tbody>
               </table>
@@ -147,6 +181,7 @@ export default {
       },
       expense: {
         huntCode: '',
+        pinCode: '',
         amount: 0
       },
       lootData: {
@@ -154,6 +189,8 @@ export default {
       },
       startDate: '',
       endDate: '',
+      huntPaid: false,
+      huntUnpaid: false,
       hunts: [],
       errors: [],
       xpChartData: [],
@@ -242,6 +279,12 @@ export default {
           this.forms.expense.errors.push({ field: 'huntCode', error: 'Hunt code must be input.' })
         }
 
+        if (!value.pinCode || value.pinCode === '') {
+          this.forms.expense.errors.push({ field: 'pinCode', error: 'Hunt\'s pin code must be input.' })
+        } else if (isNaN(value.pinCode)) {
+          this.forms.expense.errors.push({ field: 'pinCode', error: 'Hunt\'s pin code must be a number.' })
+        }
+
         if (!value.amount || value.amount === '') {
           this.forms.expense.errors.push({ field: 'amount', error: 'Expense amount must be input.' })
         } else if (isNaN(value.amount) || Number(value.amount) < 0) {
@@ -249,6 +292,20 @@ export default {
         }
       },
       deep: true
+    },
+    huntPaid: {
+      handler (value, oldValue) {
+        if (value) {
+          this.huntUnpaid = false
+        }
+      }
+    },
+    huntUnpaid: {
+      handler (value, oldValue) {
+        if (value) {
+          this.huntPaid = false
+        }
+      }
     },
     lootData: {
       handler (value, oldValue) {
@@ -274,7 +331,12 @@ export default {
     reset: function (event) {
       this.startDate = moment().startOf('month').format('YYYY-MM-DD')
       this.endDate = moment(this.startDate).add(1, 'month').format('YYYY-MM-DD')
+      this.huntPaid = false
+      this.huntUnpaid = false
       this.loadHunts()
+    },
+    showPinCode: function (huntIdx) {
+      this.hunts[huntIdx].displayPinCode = true
     },
     loadHunts: function () {
       axios.get(`/api/reports/hunts`, {
@@ -283,14 +345,18 @@ export default {
         },
         params: {
           startDate: this.startDate,
-          endDate: this.endDate
+          endDate: this.endDate,
+          huntPaid: this.huntPaid ? true : this.huntUnpaid ? false : null
         }
       })
         .then(response => {
           // It's annoying that Axios automatically creates a 'data' node
           const data = response.data
           if (data.data) {
-            this.hunts = data.data.hunts
+            this.hunts = data.data.hunts.map((hunt) => {
+              hunt['displayPinCode'] = false
+              return hunt
+            })
           } else {
             this.errors.push(data.data.error)
           }
@@ -338,7 +404,8 @@ export default {
     },
     submitExpenseData: function () {
       const body = {
-        expenseData: this.expense.amount
+        expenseAmount: this.expense.amount,
+        pinCode: this.expense.pinCode
       }
       axios.post(`/api/reports/hunts/${this.expense.huntCode}/expense`, body, {
         headers: {
@@ -350,10 +417,11 @@ export default {
             EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store expense: ${response.error}` })
           } else {
             EventBus.$emit('lb-toast-display', { type: 'success', message: `Expense successfully added to hunt ${this.expense.huntCode}` })
+            this.loadHunts()
           }
         })
         .catch(error => {
-          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store expense: ${error}` })
+          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store expense: ${error.response.data.error}` })
         })
     },
     submitLootData: function () {
@@ -370,10 +438,30 @@ export default {
             EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store report: ${response.error}` })
           } else {
             EventBus.$emit('lb-toast-display', { type: 'success', message: `Report successfully stored` })
+            this.loadHunts()
           }
         })
         .catch(error => {
-          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store report: ${error}` })
+          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to store report: ${error.response.data.error}` })
+        })
+    },
+    submitPaymentData: function (huntCode) {
+      const body = {}
+      axios.post(`/api/reports/hunts/${huntCode}/paid`, body, {
+        headers: {
+          Authorization: `Bearer ${getToken()}`
+        }
+      })
+        .then(response => {
+          if (response.error) {
+            EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to mark hunt as paid: ${response.error}` })
+          } else {
+            EventBus.$emit('lb-toast-display', { type: 'success', message: `Hunt successfully marked as paid` })
+            this.loadHunts()
+          }
+        })
+        .catch(error => {
+          EventBus.$emit('lb-toast-display', { type: 'danger', message: `Unable to mark hunt as paid: ${error.response.data.error}` })
         })
     }
   }
@@ -383,5 +471,8 @@ export default {
 <style scoped>
 .lb-action-btn {
   margin: 0 .2rem;
+}
+.clickable {
+  cursor: pointer;
 }
 </style>

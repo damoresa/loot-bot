@@ -1,3 +1,5 @@
+'use strict';
+
 const MODE = {
     GENERAL: 0,
     ITEMS: 1,

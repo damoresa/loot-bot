@@ -1,12 +1,16 @@
+'use strict';
+
 class ReportModel {
     constructor() {
         this._code;
+        this._pinCode;
         this._damage;
         this._healing;
         this._loot;
         this._lootItems = [];
         this._monsters = [];
         this._reporter;
+        this._reporterId;
         this._sessionEndTime;
         this._sessionStartTime;
         this._sessionTime;
@@ -20,6 +24,14 @@ class ReportModel {
 
     set code(code) {
         this._code = code;
+    }
+
+    get pinCode() {
+        return this._pinCode;
+    }
+
+    set pinCode(pinCode) {
+        this._pinCode = pinCode;
     }
 
     get damage() {
@@ -60,6 +72,14 @@ class ReportModel {
 
     set reporter(reporter) {
         this._reporter = reporter;
+    }
+
+    get reporterId() {
+        return this._reporterId;
+    }
+
+    set reporterId(reporterId) {
+        this._reporterId = reporterId;
     }
 
     get sessionEndTime() {

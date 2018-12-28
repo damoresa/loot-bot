@@ -1,3 +1,5 @@
+'use strict';
+
 class BalanceModel {
     constructor() {
         this._code;

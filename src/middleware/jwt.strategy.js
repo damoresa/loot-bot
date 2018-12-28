@@ -1,3 +1,5 @@
+'use strict';
+
 const passportJwt = require('passport-jwt');
 const winston = require('winston');
 

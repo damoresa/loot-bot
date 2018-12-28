@@ -1,3 +1,5 @@
+'use strict';
+
 class MonthBalanceModel {
     constructor() {
         this._expenses;
