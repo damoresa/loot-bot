@@ -30,7 +30,7 @@ Your share of the loot is calculated following these steps:
 - [x] Submit loot reports through the web application.
 - [x] Submit expenses through the web application.
 - [x] Balance per reporter on hunt balance request.
-- [ ] Mark hunts as paid.
+- [x] Mark hunts as paid. Add filters to search for paid/unpaid hunts.
 - [x] Generate a pin code for hunts so only "_authorized_" persons can submit expenses.
 
 ### Possible future features

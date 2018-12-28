@@ -23,6 +23,7 @@ const CONSTANTS = {
         'MONTHBALANCE': /^!monthbalance$/,
         'MONTHHUNTS': /^!monthhunts$/,
         'MONTHXP': /^!monthxp$/,
+        'PAY': /^!pay ([^\s]+)$/,
     },
     'DATA_REGEXP': {
         'DAMAGE': /Damage: (\d+[,\d+]*)/,

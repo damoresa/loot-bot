@@ -20,6 +20,7 @@ const huntSchema = new Schema({
     experience: {type: Number, required: true},
     loot: {type: Number, required: true},
     pinCode: {type: String, required: true},
+    paid: {type: Boolean, required: true},
     items: [itemSchema],
     monsters: [monsterSchema],
     expenses: [expenseSchema]
@@ -31,6 +32,7 @@ huntSchema.pre('validate', function () {
     if (this.isNew) {
         this.code = generateHuntCode();
         this.pinCode = generateRandomPinCode(CONSTANTS.PINCODE_LENGTH);
+        this.paid = false;
     }
 });
 

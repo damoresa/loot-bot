@@ -10,6 +10,7 @@ class ReportModel {
         this._lootItems = [];
         this._monsters = [];
         this._reporter;
+        this._reporterId;
         this._sessionEndTime;
         this._sessionStartTime;
         this._sessionTime;
@@ -71,6 +72,14 @@ class ReportModel {
 
     set reporter(reporter) {
         this._reporter = reporter;
+    }
+
+    get reporterId() {
+        return this._reporterId;
+    }
+
+    set reporterId(reporterId) {
+        this._reporterId = reporterId;
     }
 
     get sessionEndTime() {

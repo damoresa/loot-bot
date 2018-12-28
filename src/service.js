@@ -19,6 +19,7 @@ class HuntService {
         this.retrieveMonthHunts.bind(this);
         this.saveExpense.bind(this);
         this.saveLoot.bind(this);
+        this.savePayment.bind(this);
     }
 
     async calculateBalance(huntCode) {
@@ -88,9 +89,11 @@ class HuntService {
             const huntReportModel = new SingleHuntReportModel();
 
             huntReportModel.code = hunt.code;
+            huntReportModel.pinCode = hunt.pinCode;
             huntReportModel.date = moment(hunt.date).format('DD/MM/YYYY HH:mm');
             huntReportModel.experience = hunt.experience;
             huntReportModel.loot = hunt.loot;
+            huntReportModel.paid = hunt.paid;
             huntReportModel.share = hunt.expenses.find((expense) => expense.reporterId === userId).balance;
             huntReportModel.expenses = hunt.expenses.reduce((aggregate, expense) => {
                 return aggregate + expense.amount;
@@ -107,11 +110,12 @@ class HuntService {
                     name: monster.name,
                 };
             });
+            // We do not send the reporterIds on this request to avoid leaking users' Discord id
             huntReportModel.reporters = hunt.expenses.map((expense) => {
                 return {
                     amount: expense.amount,
+                    balance: expense.balance,
                     reporter: expense.reporter,
-                    reporterId: expense.reporterId,
                 };
             });
 
@@ -121,14 +125,14 @@ class HuntService {
         }
     }
 
-    async getUserHuntsData(userId, startDate, endDate) {
+    async getUserHuntsData(userId, startDate, endDate, huntPaid) {
         winston.info(`Generating hunts report user ${userId}.`);
 
         try {
             const initDate = startDate ? moment(startDate, 'YYYY/MM/DD') : undefined;
             const lastDate = endDate ? moment(endDate, 'YYYY/MM/DD') : undefined;
 
-            const hunts = await Storer.getHuntsByUser(userId, initDate, lastDate);
+            const hunts = await Storer.getHuntsByUser(userId, initDate, lastDate, huntPaid);
 
             const huntsReportModel = new HuntsReportModel();
             huntsReportModel.hunts = hunts.map((hunt) => {
@@ -141,6 +145,7 @@ class HuntService {
                     share: reporterExpense.balance,
                     loot: hunt.loot,
                     expenses: reporterExpense.amount,
+                    paid: hunt.paid
                 };
             });
 
@@ -189,6 +194,17 @@ class HuntService {
             report.code = result.code;
             report.pinCode = result.pinCode;
             return report;
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async savePayment(payment) {
+        winston.info(`Storing payment ${JSON.stringify(payment)}.`);
+
+        try {
+            await Storer.persistPayment(payment);
+            return payment;
         } catch (err) {
             throw err;
         }

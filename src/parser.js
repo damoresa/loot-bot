@@ -7,6 +7,7 @@ const CONSTANTS = require('./constants/constants');
 const MODE = require('./constants/mode.enum');
 
 const ExpenseModel = require('./models/expense.model');
+const PaymentModel = require('./models/payment.model');
 const ReportDetailModel = require('./models/report-detail.model');
 const ReportModel = require('./models/report.model');
 
@@ -17,15 +18,18 @@ class Parser {
         this.parseExpense.bind(this);
         this.parseHelp.bind(this);
         this.parseLoot.bind(this);
+        this.parsePayment.bind(this);
 
         // Web
         this.parseWebExpense.bind(this);
         this.parseWebLoot.bind(this);
+        this.parseWebPayment.bind(this);
 
         // Internals
         this._parseExpenseContent.bind(this);
         this._parseLootContent.bind(this);
         this._parseLine.bind(this);
+        this._parsePaymentContent.bind(this);
     }
 
     parseBalance(content) {
@@ -62,18 +66,6 @@ class Parser {
         });
     }
 
-    parseWebExpense(reporter, reporterId, huntCode, expenseData, pinCode) {
-        return new Promise((resolve, reject) => {
-            try {
-                const expense = this._parseExpenseContent(reporter, reporterId, huntCode, expenseData, pinCode);
-
-                resolve(expense);
-            } catch (err) {
-                reject(err);
-            }
-        });
-    }
-
     parseHelp(content) {
         return new Promise((resolve, reject) => {
             try {
@@ -94,14 +86,14 @@ class Parser {
         });
     }
 
-    parseLoot(reporter, content) {
+    parseLoot(reporter, reporterId, content) {
         return new Promise((resolve, reject) => {
             try {
                 const match = CONSTANTS.COMMANDS_REGEXP.LOOT.exec(content);
                 if (match) {
                     const lootData = match[1];
 
-                    const report = this._parseLootContent(reporter, lootData);
+                    const report = this._parseLootContent(reporter, reporterId, lootData);
 
                     resolve(report);
                 } else {
@@ -113,12 +105,53 @@ class Parser {
         });
     }
 
-    parseWebLoot(reporter, content) {
+    parsePayment(reporter, reporterId, content) {
         return new Promise((resolve, reject) => {
             try {
-                const report = this._parseLootContent(reporter, content);
+                const match = CONSTANTS.COMMANDS_REGEXP.PAY.exec(content);
+                if (match) {
+                    const report = this._parsePaymentContent(reporter, reporterId, match[1]);
+
+                    resolve(report);
+                } else {
+                    reject(`Unable to parse payment from input ${content}`);
+                }
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    parseWebExpense(reporter, reporterId, huntCode, expenseData, pinCode) {
+        return new Promise((resolve, reject) => {
+            try {
+                const expense = this._parseExpenseContent(reporter, reporterId, huntCode, expenseData, pinCode);
+
+                resolve(expense);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    parseWebLoot(reporter, reporterId, content) {
+        return new Promise((resolve, reject) => {
+            try {
+                const report = this._parseLootContent(reporter, reporterId, content);
 
                 resolve(report);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    parseWebPayment(reporter, reporterId, huntCode) {
+        return new Promise((resolve, reject) => {
+            try {
+                const payment = this._parsePaymentContent(reporter, reporterId, huntCode);
+
+                resolve(payment);
             } catch (err) {
                 reject(err);
             }
@@ -136,12 +169,13 @@ class Parser {
         return expense;
     }
 
-    _parseLootContent(reporter, content) {
+    _parseLootContent(reporter, reporterId, content) {
 
         const splitData = content.split('\n');
 
         const report = new ReportModel();
         report.reporter = reporter;
+        report.reporterId = reporterId;
         let mode = MODE.GENERAL;
 
         winston.info('Processing general info');
@@ -233,6 +267,15 @@ class Parser {
             default:
                 throw new Error('Unsupported mode');
         }
+    }
+
+    _parsePaymentContent(reporter, reporterId, huntCode) {
+        const payment = new PaymentModel();
+        payment.code = huntCode;
+        payment.reporter = reporter;
+        payment.reporterId = reporterId;
+
+        return payment
     }
 }
 

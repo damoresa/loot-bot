@@ -17,6 +17,7 @@ const parseExpense = (expense) => {
     return {
         amount: Number(expense.amount),
         reporter: expense.reporter,
+        reporterId: expense.reporterId,
         balance: 0
     };
 };
@@ -81,6 +82,7 @@ class Storer {
         this.getMonthHunts.bind(this);
         this.persistExpense.bind(this);
         this.persistLoot.bind(this);
+        this.persistPayment.bind(this);
     }
 
     async getBalanceData(code) {
@@ -134,8 +136,8 @@ class Storer {
         }
     }
 
-    async getHuntsByUser(userId, startDate, endDate) {
-        winston.debug(`Retrieving hunts for user ${userId}`);
+    async getHuntsByUser(userId, startDate, endDate, huntPaid) {
+        winston.debug(`Retrieving ${huntPaid ? 'paid' : 'unpaid'} hunts for user ${userId}`);
         winston.debug(`Date range: ${startDate} -> ${endDate}`);
 
         try {
@@ -149,6 +151,10 @@ class Storer {
                 query[ 'date' ] = { $gte: startDate.toDate() };
             } else if (endDate) {
                 query[ 'date' ] = { $lt: endDate.toDate() };
+            }
+
+            if (huntPaid) {
+                query[ 'paid' ] = huntPaid;
             }
 
             return await Hunt.find(query).sort('date');
@@ -275,6 +281,7 @@ class Storer {
             const expense = new ExpenseModel();
             expense.amount = report.supplies;
             expense.reporter = report.reporter;
+            expense.reporterId = report.reporterId;
 
             // The initial expense receives all the loot value
             const parsedExpense = parseExpense(expense);
@@ -296,10 +303,30 @@ class Storer {
             hunt.expenses.push(parsedExpense);
 
             await hunt.save();
-            winston.debug(`Hunt data stored with code ${code}`);
+            winston.debug(`Hunt data stored with code ${hunt.code}`);
             return { code: hunt.code, pinCode: hunt.pinCode };
         } catch (err) {
             winston.error(`Unable to persist hunt: ${err}`);
+            throw err;
+        }
+    }
+
+    async persistPayment(payment) {
+        winston.debug(`Storing payment information.`);
+
+        try {
+            const hunt = await Hunt.findOne({ 'code': payment.code, 'expenses.reporterId': payment.reporterId });
+
+            if (hunt) {
+                hunt.paid = true;
+                await hunt.save();
+
+                return true;
+            } else {
+                throw Error(`User ${payment.reporter} is not allowed to mark the hunt ${payment.code} as paid.`);
+            }
+        } catch (err) {
+            winston.error(`Unable to mark hunt ${payment.code} as paid by ${payment.reporterId}: ${err}`);
             throw err;
         }
     }

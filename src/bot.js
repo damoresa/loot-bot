@@ -47,7 +47,7 @@ const launchDiscordBot = () => {
                 }
             } else if (CONSTANTS.COMMANDS_REGEXP.LOOT.test(message.content)) {
                 try {
-                    const lootReport = await Parser.parseLoot(message.author.username, message.content);
+                    const lootReport = await Parser.parseLoot(message.author.username, message.author.id, message.content);
                     const output = await Service.saveLoot(lootReport);
 
                     let response = `You hunted for ${output.sessionTime} hours:\n`;
@@ -160,6 +160,17 @@ const launchDiscordBot = () => {
                 } catch (err) {
                     winston.error(`Unable to generate this month's hunts balance report for user ${message.author.username}: ${err}`);
                     message.reply('Unable to generate this month\'s hunts balance report.');
+                }
+            } else if (CONSTANTS.COMMANDS_REGEXP.PAY.test(message.content)) {
+                try {
+                    const paymentReport = await Parser.parsePayment(message.author.username, message.author.id, message.content);
+                    const output = await Service.savePayment(paymentReport);
+
+                    const response = `Hunt ${output.code} has been marked as paid by ${output.reporter}.`;
+                    message.reply(response);
+                } catch (err) {
+                    winston.error(`Unable to mark hunt as paid by user ${message.author.username}: ${err}`);
+                    message.reply('Unable to mark hunt as paid.');
                 }
             } else {
                 winston.error(`${message.author.username} tried to use the command ${message.content}`);
