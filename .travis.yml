@@ -16,3 +16,6 @@ deploy:
   api-key:
     secure: $HEROKU_API_KEY
 app: loot-bot
+branches:
+  only:
+    - master
