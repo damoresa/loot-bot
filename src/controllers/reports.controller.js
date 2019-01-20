@@ -7,7 +7,6 @@ const Parser = require('./../parser');
 const Service = require('./../service');
 
 class ReportsController {
-
     get router() {
         return this._router;
     }
@@ -17,7 +16,7 @@ class ReportsController {
     }
 
     init() {
-        winston.debug(`Initializing ReportsController`);
+        winston.debug('Initializing ReportsController');
         this._router = express.Router();
         this._router.get('/hunts', this.loadHunts.bind(this));
         this._router.get('/hunts/:huntId', this.loadHunt.bind(this));
@@ -27,26 +26,24 @@ class ReportsController {
     }
 
     addHunt(request, response) {
-
         const username = request.user.username;
         const userId = request.user.discord_id;
         const lootData = request.body.lootData;
 
-		winston.debug(`${username} is storing: ${JSON.stringify(lootData)}`);
+        winston.debug(`${username} is storing: ${JSON.stringify(lootData)}`);
 
-       Parser.parseWebLoot(username, userId, lootData)
+        Parser.parseWebLoot(username, userId, lootData)
             .then(Service.saveLoot)
             .then((output) => {
                 response.json({ message: `Report successfully stored with code ${output.code}` });
             })
             .catch((error) => {
                 winston.error(`Unable to store hunt report for ${username}. Reason: ${error}`);
-                response.status(500).json({ error: `Unable to store hunt report.` });
+                response.status(500).json({ error: 'Unable to store hunt report.' });
             });
     }
 
     addExpense(request, response) {
-
         const username = request.user.username;
         const userId = request.user.discord_id;
         const huntCode = request.params.huntId;
@@ -58,16 +55,20 @@ class ReportsController {
         Parser.parseWebExpense(username, userId, huntCode, expenseAmount, pinCode)
             .then(Service.saveExpense)
             .then((output) => {
-                response.json({ message: `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.` });
+                response.json({
+                    message: `Expense of ${output.amount} registered for hunt ${output.code} by ${output.reporter}.`
+                });
             })
             .catch((error) => {
                 winston.error(`Unable to store expense for user ${username} with pin code ${pinCode}: ${error}`);
-                response.status(500).json({ error: `Unable to store expense, please remember to input the correct pin code. If you don't have one, ask the hunt reporter for it.` });
+                response.status(500).json({
+                    error:
+                        "Unable to store expense, please remember to input the correct pin code. If you don't have one, ask the hunt reporter for it."
+                });
             });
     }
 
     loadHunts(request, response) {
-
         const username = request.user.username;
         const userId = request.user.discord_id;
         const startDate = request.query.startDate;
@@ -85,10 +86,9 @@ class ReportsController {
     }
 
     loadHunt(request, response) {
-
         const username = request.user.username;
         const userId = request.user.discord_id;
-		const huntId = request.params.huntId;
+        const huntId = request.params.huntId;
 
         Service.getHuntById(userId, huntId)
             .then((data) => {
@@ -101,7 +101,6 @@ class ReportsController {
     }
 
     markPayment(request, response) {
-
         const username = request.user.username;
         const userId = request.user.discord_id;
         const huntId = request.params.huntId;
@@ -116,7 +115,6 @@ class ReportsController {
                 response.status(500).json({ error: `Unable mark hunt ${huntId} as paid by user ${username}` });
             });
     }
-
 }
 
 module.exports = new ReportsController();

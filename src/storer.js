@@ -8,9 +8,11 @@ const ExpenseModel = require('./models/expense.model');
 
 // Import Mongoose Schemas. Order is relevant in case they've not been importer and initialized in the
 // Mongoose context before.
+/* eslint-disable */
 const Expense = require('./schemas/expense.schema');
 const Item = require('./schemas/item.schema');
 const Monster = require('./schemas/monster.schema');
+/* eslint-enable */
 const Hunt = require('./schemas/hunt.schema');
 
 const parseExpense = (expense) => {
@@ -46,17 +48,23 @@ const calculateBalance = (hunt, expensesData) => {
         data = expensesData.map((expense) => {
             expense.balance = expense.amount + profit;
 
-            winston.debug(`Reporter ${expense.reporter} was assigned his expense of ${expense.amount} and a profit of ${profit} (${expense.balance})`);
+            winston.debug(
+                `Reporter ${expense.reporter} was assigned his expense of ${
+                    expense.amount
+                } and a profit of ${profit} (${expense.balance})`
+            );
 
             return expense;
         });
     } else {
         data = expensesData.map((expense) => {
             // FIXME: Keep an eye on this Math.round as it may play nasty tricks on some balances. Floor swallowed 1% a couple times :(
-            const percentage = Number((Math.round(expense.amount / totalExpenses * 100) / 100).toFixed(2));
+            const percentage = Number((Math.round((expense.amount / totalExpenses) * 100) / 100).toFixed(2));
             expense.balance = Math.floor(hunt.loot * percentage);
 
-            winston.debug(`Reporter ${expense.reporter} was assigned a ${percentage * 100}% of the loot (${expense.balance})`);
+            winston.debug(
+                `Reporter ${expense.reporter} was assigned a ${percentage * 100}% of the loot (${expense.balance})`
+            );
 
             return expense;
         });
@@ -89,7 +97,7 @@ class Storer {
         winston.debug(`Generating balance for hunt ${code}`);
 
         try {
-            const hunt = await Hunt.findOne({ 'code': code });
+            const hunt = await Hunt.findOne({ code: code });
             if (hunt) {
                 const balance = new BalanceModel();
                 balance.code = hunt.code;
@@ -100,7 +108,7 @@ class Storer {
                     return {
                         amount: expense.amount,
                         balance: expense.balance,
-                        reporter: expense.reporter,
+                        reporter: expense.reporter
                     };
                 });
                 balance.expenses = hunt.expenses.reduce((total, expense) => {
@@ -121,8 +129,8 @@ class Storer {
 
         try {
             const query = {
-                'code': huntCode,
-                'expenses.reporterId': userId,
+                code: huntCode,
+                'expenses.reporterId': userId
             };
 
             const hunt = await Hunt.findOne(query);
@@ -142,19 +150,19 @@ class Storer {
 
         try {
             const query = {
-                'expenses.reporterId': userId,
+                'expenses.reporterId': userId
             };
 
             if (startDate && endDate) {
-                query[ 'date' ] = { $gte: startDate.toDate(), $lt: endDate.toDate() };
+                query['date'] = { $gte: startDate.toDate(), $lt: endDate.toDate() };
             } else if (startDate) {
-                query[ 'date' ] = { $gte: startDate.toDate() };
+                query['date'] = { $gte: startDate.toDate() };
             } else if (endDate) {
-                query[ 'date' ] = { $lt: endDate.toDate() };
+                query['date'] = { $lt: endDate.toDate() };
             }
 
             if (huntPaid) {
-                query[ 'paid' ] = huntPaid;
+                query['paid'] = huntPaid;
             }
 
             return await Hunt.find(query).sort('date');
@@ -164,7 +172,7 @@ class Storer {
     }
 
     async getMonthHunts() {
-        winston.debug(`Generating this month's hunts report`);
+        winston.debug("Generating this month's hunts report");
 
         try {
             const month = moment().startOf('month');
@@ -173,7 +181,7 @@ class Storer {
             winston.debug(`Current month: ${month}`);
             winston.debug(`Next month: ${nextMonth}`);
 
-            return await Hunt.find({ 'date': { $gte: month.toDate(), $lt: nextMonth.toDate() } }).sort('date');
+            return await Hunt.find({ date: { $gte: month.toDate(), $lt: nextMonth.toDate() } }).sort('date');
         } catch (err) {
             throw err;
         }
@@ -195,7 +203,7 @@ class Storer {
          */
         winston.debug(`Registering expense ${JSON.stringify(expense)}`);
         try {
-            const hunt = await Hunt.findOne({ 'code': expense.code, 'pinCode': expense.pinCode });
+            const hunt = await Hunt.findOne({ code: expense.code, pinCode: expense.pinCode });
 
             if (hunt) {
                 const parsedExpense = parseExpense(expense);
@@ -205,7 +213,7 @@ class Storer {
                         amount: expenseData.amount,
                         balance: expenseData.balance,
                         reporter: expenseData.reporter,
-                        reporterId: expenseData.reporterId,
+                        reporterId: expenseData.reporterId
                     };
                 });
 
@@ -235,7 +243,7 @@ class Storer {
                         amount: parsedExpense.amount,
                         balance: 0,
                         reporter: parsedExpense.reporter,
-                        reporterId: parsedExpense.reporterId,
+                        reporterId: parsedExpense.reporterId
                     });
                     hunt.expenses.push(parsedExpense);
 
@@ -270,7 +278,7 @@ class Storer {
     }
 
     async persistLoot(report) {
-        winston.debug(`Storing loot information.`);
+        winston.debug('Storing loot information.');
 
         try {
             // MomentJS for date management
@@ -312,10 +320,10 @@ class Storer {
     }
 
     async persistPayment(payment) {
-        winston.debug(`Storing payment information.`);
+        winston.debug('Storing payment information.');
 
         try {
-            const hunt = await Hunt.findOne({ 'code': payment.code, 'expenses.reporterId': payment.reporterId });
+            const hunt = await Hunt.findOne({ code: payment.code, 'expenses.reporterId': payment.reporterId });
 
             if (hunt) {
                 hunt.paid = true;

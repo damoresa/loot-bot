@@ -1,15 +1,16 @@
 {
   "name": "loot-bot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A simple loot bot project for fun",
   "main": "src/application.js",
   "scripts": {
+    "eslint": "eslint src/** --fix",
     "rebuild": "npm run clean:front && npm run build:front && npm run devStart",
     "devStart": "nodemon --watch src ./src/application.js",
     "start": "node ./src/application.js",
     "build:front": "cd webapp && npm install && npm run build",
     "clean:front": "rimraf public",
-    "postinstall": "npm run clean:front && npm run build:front"
+    "postinstall": "npm run eslint && npm run clean:front && npm run build:front"
   },
   "author": "Daniel Amores <damoresac@gmail.com>",
   "dependencies": {
@@ -27,6 +28,9 @@
     "winston": "2.4.0"
   },
   "devDependencies": {
-    "nodemon": "1.14.7"
+    "eslint": "5.12.1",
+    "eslint-plugin-prettier": "3.0.1",
+    "nodemon": "1.14.7",
+    "prettier": "1.16.0"
   }
 }

@@ -170,7 +170,6 @@ class Parser {
     }
 
     _parseLootContent(reporter, reporterId, content) {
-
         const splitData = content.split('\n');
 
         const report = new ReportModel();
@@ -199,7 +198,7 @@ class Parser {
 
     _parseLine(mode, line, report) {
         switch (mode) {
-            case MODE.GENERAL:
+            case MODE.GENERAL: {
                 const damage = CONSTANTS.DATA_REGEXP.DAMAGE.exec(line);
                 const healing = CONSTANTS.DATA_REGEXP.HEALING.exec(line);
                 const loot = CONSTANTS.DATA_REGEXP.LOOT.exec(line);
@@ -238,7 +237,8 @@ class Parser {
                 }
 
                 break;
-            case MODE.ITEMS:
+            }
+            case MODE.ITEMS: {
                 const itemDetail = CONSTANTS.DATA_REGEXP.DETAIL_ENTRY.exec(line);
 
                 // Fixes a bug where no loot reports would silently crash.
@@ -251,7 +251,8 @@ class Parser {
                 }
 
                 break;
-            case MODE.MONSTERS:
+            }
+            case MODE.MONSTERS: {
                 const monsterDetail = CONSTANTS.DATA_REGEXP.DETAIL_ENTRY.exec(line);
 
                 // Fixes a bug where no monsters reports would silently crash.
@@ -264,8 +265,10 @@ class Parser {
                 }
 
                 break;
-            default:
+            }
+            default: {
                 throw new Error('Unsupported mode');
+            }
         }
     }
 
@@ -275,7 +278,7 @@ class Parser {
         payment.reporter = reporter;
         payment.reporterId = reporterId;
 
-        return payment
+        return payment;
     }
 }
 

@@ -8,7 +8,6 @@ class DiscordService {
     constructor() {}
 
     retrieveUserData(token) {
-
         winston.debug('Retrieving user data from Discord');
 
         const options = {

@@ -35,9 +35,11 @@ const launchExpress = () => {
 
     // Serve static resources and parse requests body as JSON
     application.use(bodyParser.json());
-    application.use(bodyParser.urlencoded({
-        extended: true
-    }));
+    application.use(
+        bodyParser.urlencoded({
+            extended: true
+        })
+    );
     application.use(express.static(path.join(__dirname, '..', 'public')));
 
     application.use('/auth', authController.router);
@@ -50,9 +52,8 @@ const launchExpress = () => {
         response.sendFile(indexPath);
     });
 
-
     application.listen(applicationPort, () => {
-        winston.debug(`Loot-Bot backend listening on port ${applicationPort}!`)
+        winston.debug(`Loot-Bot backend listening on port ${applicationPort}!`);
     });
 
     application.on('error', (error) => {

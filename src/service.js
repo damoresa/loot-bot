@@ -41,20 +41,24 @@ class HuntService {
 
             const hunts = await Storer.getHuntsByUser(userId, month, nextMonth);
             const monthBalance = new MonthBalanceModel();
-            const expensesValue = hunts.reduce((expenses, hunt) => {
-                return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
-            }, []).reduce((cost, expense) => {
-                return cost + expense.amount;
-            }, 0);
+            const expensesValue = hunts
+                .reduce((expenses, hunt) => {
+                    return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
+                }, [])
+                .reduce((cost, expense) => {
+                    return cost + expense.amount;
+                }, 0);
 
             // Use the balance calculated field
-            const lootValue = hunts.reduce((expenses, hunt) => {
-                return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
-            }, []).reduce((loot, expense) => {
-                const balanceValue = expense.balance ? expense.balance : 0;
+            const lootValue = hunts
+                .reduce((expenses, hunt) => {
+                    return expenses.concat(hunt.expenses.filter((expense) => expense.reporterId === userId));
+                }, [])
+                .reduce((loot, expense) => {
+                    const balanceValue = expense.balance ? expense.balance : 0;
 
-                return loot + balanceValue;
-            }, 0);
+                    return loot + balanceValue;
+                }, 0);
             monthBalance.expenses = expensesValue;
             monthBalance.loot = lootValue;
 
@@ -101,13 +105,13 @@ class HuntService {
             huntReportModel.items = hunt.items.map((item) => {
                 return {
                     amount: item.amount,
-                    name: item.name,
+                    name: item.name
                 };
             });
             huntReportModel.monsters = hunt.monsters.map((monster) => {
                 return {
                     amount: monster.amount,
-                    name: monster.name,
+                    name: monster.name
                 };
             });
             // We do not send the reporterIds on this request to avoid leaking users' Discord id
@@ -115,7 +119,7 @@ class HuntService {
                 return {
                     amount: expense.amount,
                     balance: expense.balance,
-                    reporter: expense.reporter,
+                    reporter: expense.reporter
                 };
             });
 

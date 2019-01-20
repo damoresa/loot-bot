@@ -5,7 +5,7 @@ class BalanceModel {
         this._code;
         this._loot;
         this._balances = [];
-		this._expenses;
+        this._expenses;
     }
 
     get code() {
