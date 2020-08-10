@@ -1,34 +1,21 @@
 'use strict';
 
-const Promise = require('bluebird');
-const request = require('request');
+const axios = require('axios');
 const winston = require('winston');
 
 class DiscordService {
     constructor() {}
 
-    retrieveUserData(token) {
+    async retrieveUserData(token) {
         winston.debug('Retrieving user data from Discord');
 
-        const options = {
-            url: 'http://discordapp.com/api/users/@me',
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+        const headers = {
+            Authorization: `Bearer ${token}`
         };
 
-        return new Promise((resolve, reject) => {
-            request(options, (err, res, body) => {
-                if (res && (res.statusCode === 200 || res.statusCode === 201)) {
-                    winston.debug(body);
-                    const parsedResponse = JSON.parse(body);
-                    resolve(parsedResponse);
-                } else {
-                    reject(err);
-                }
-            });
-        });
+        const response = await axios.get('http://discordapp.com/api/users/@me', { headers });
+        winston.debug('Allocated user data', response.data);
+        return response.data;
     }
 }
 

@@ -1,6 +1,5 @@
 'use strict';
 
-const Promise = require('bluebird');
 const winston = require('winston');
 
 const CONSTANTS = require('./constants/constants');
@@ -32,130 +31,68 @@ class Parser {
         this._parsePaymentContent.bind(this);
     }
 
-    parseBalance(content) {
-        return new Promise((resolve, reject) => {
-            try {
-                const match = CONSTANTS.COMMANDS_REGEXP.BALANCE.exec(content);
-                if (match) {
-                    const code = match[1];
-
-                    resolve(code);
-                } else {
-                    reject(`Unable to parse balance from input ${content}`);
-                }
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async parseBalance(content) {
+        const match = CONSTANTS.COMMANDS_REGEXP.BALANCE.exec(content);
+        if (match) {
+            return match[1];
+        } else {
+            throw new Error(`Unable to parse balance from input ${content}`);
+        }
     }
 
-    parseExpense(reporter, reporterId, content) {
-        return new Promise((resolve, reject) => {
-            try {
-                const match = CONSTANTS.COMMANDS_REGEXP.EXPENSE.exec(content);
-                if (match) {
-                    const expense = this._parseExpenseContent(reporter, reporterId, match[1], match[2], match[3]);
-
-                    resolve(expense);
-                } else {
-                    reject(`Unable to parse expense from input ${content}`);
-                }
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async parseExpense(reporter, reporterId, content) {
+        const match = CONSTANTS.COMMANDS_REGEXP.EXPENSE.exec(content);
+        if (match) {
+            return this._parseExpenseContent(reporter, reporterId, match[1], match[2], match[3]);
+        } else {
+            throw new Error(`Unable to parse expense from input ${content}`);
+        }
     }
 
-    parseHelp(content) {
-        return new Promise((resolve, reject) => {
-            try {
-                const match = CONSTANTS.COMMANDS_REGEXP.HELP.exec(content);
-                if (match) {
-                    let username = undefined;
-                    if (match.length === 3) {
-                        username = match[2];
-                    }
-
-                    resolve(username);
-                } else {
-                    reject(`Unable to parse help from input ${content}`);
-                }
-            } catch (err) {
-                reject(err);
+    async parseHelp(content) {
+        const match = CONSTANTS.COMMANDS_REGEXP.HELP.exec(content);
+        if (match) {
+            let username = undefined;
+            if (match.length === 3) {
+                username = match[2];
             }
-        });
+
+            return username;
+        } else {
+            throw new Error(`Unable to parse help from input ${content}`);
+        }
     }
 
-    parseLoot(reporter, reporterId, content) {
-        return new Promise((resolve, reject) => {
-            try {
-                const match = CONSTANTS.COMMANDS_REGEXP.LOOT.exec(content);
-                if (match) {
-                    const lootData = match[1];
+    async parseLoot(reporter, reporterId, content) {
+        const match = CONSTANTS.COMMANDS_REGEXP.LOOT.exec(content);
+        if (match) {
+            const lootData = match[1];
 
-                    const report = this._parseLootContent(reporter, reporterId, lootData);
-
-                    resolve(report);
-                } else {
-                    reject(`Unable to parse expense from input ${content}`);
-                }
-            } catch (err) {
-                reject(err);
-            }
-        });
+            return this._parseLootContent(reporter, reporterId, lootData);
+        } else {
+            throw new Error(`Unable to parse expense from input ${content}`);
+        }
     }
 
-    parsePayment(reporter, reporterId, content) {
-        return new Promise((resolve, reject) => {
-            try {
-                const match = CONSTANTS.COMMANDS_REGEXP.PAY.exec(content);
-                if (match) {
-                    const report = this._parsePaymentContent(reporter, reporterId, match[1]);
-
-                    resolve(report);
-                } else {
-                    reject(`Unable to parse payment from input ${content}`);
-                }
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async parsePayment(reporter, reporterId, content) {
+        const match = CONSTANTS.COMMANDS_REGEXP.PAY.exec(content);
+        if (match) {
+            return this._parsePaymentContent(reporter, reporterId, match[1]);
+        } else {
+            throw new Error(`Unable to parse payment from input ${content}`);
+        }
     }
 
-    parseWebExpense(reporter, reporterId, huntCode, expenseData, pinCode) {
-        return new Promise((resolve, reject) => {
-            try {
-                const expense = this._parseExpenseContent(reporter, reporterId, huntCode, expenseData, pinCode);
-
-                resolve(expense);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async parseWebExpense(reporter, reporterId, huntCode, expenseData, pinCode) {
+        return this._parseExpenseContent(reporter, reporterId, huntCode, expenseData, pinCode);
     }
 
-    parseWebLoot(reporter, reporterId, content) {
-        return new Promise((resolve, reject) => {
-            try {
-                const report = this._parseLootContent(reporter, reporterId, content);
-
-                resolve(report);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async parseWebLoot(reporter, reporterId, content) {
+        return this._parseLootContent(reporter, reporterId, content);
     }
 
-    parseWebPayment(reporter, reporterId, huntCode) {
-        return new Promise((resolve, reject) => {
-            try {
-                const payment = this._parsePaymentContent(reporter, reporterId, huntCode);
-
-                resolve(payment);
-            } catch (err) {
-                reject(err);
-            }
-        });
+    async parseWebPayment(reporter, reporterId, huntCode) {
+        return this._parsePaymentContent(reporter, reporterId, huntCode);
     }
 
     _parseExpenseContent(reporter, reporterId, huntCode, expenseAmount, pinCode) {

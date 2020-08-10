@@ -13,3 +13,4 @@ mock-hunt
 
 # Secrets
 dev.constants.js
+.env
