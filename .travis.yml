@@ -14,9 +14,9 @@ cache:
 #script: npm run test:ci && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && sonar-scanner
 deploy:
   provider: heroku
-  api-key:
+  app: loot-bot
+  api_key:
     secure: $HEROKU_API_KEY
-app: loot-bot
 branches:
   only:
     - master
