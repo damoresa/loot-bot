@@ -1,24 +1,17 @@
 language: node_js
 node_js:
-  - "8.16.0"
+- 8.16.0
 cache:
   yarn: true
   directories:
-    - "node_modules"
-# CI is not yet implemented
-#addons:
-#  sonarcloud:
-#    organization: "damoresa-github"
-#    token:
-#      secure: $SONAR_TOKEN
-#script: npm run test:ci && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && sonar-scanner
+  - node_modules
 deploy:
   provider: heroku
-  app: loot-bot
   api_key:
-    secure: $HEROKU_API_KEY
+    secure: JrAVSlgWg6N+cDBoWZbbzeujY75pv2SBEdPB1sAD3R0xUZAY1ghBXjM6TrcjA0icXs/K/hhpTPKb0mK/fEr1EHZAPh+d5o4HP30j/YOIw6ortXy5aEyETB2ONTsVi/oJNkeZkrohVcKQX29rgbLwNVDoP6ahLpnkGkGADqOXawmoSdXL9tUIpAXF7zvItZLULoLr9q0S9hs/aeNrzOVZmIHczeJ/eZ6Gno5s5hhL6FTDuoqPDeljc4LYgziW4BmYbf9PUiPGx3FffCHcRhG70tgwRoPYSakihAC6S93oIDoBpyqDU3gISnARgMNbNQz9ZzUTv+76VQvWZpYgmU9prUVVjS7pzS7lLRUSbVYZOY7rzf2wjB4+j5alrIZ7+JpbXS345eABzjnOBdNmwtUkAHBqt9WSJFaTRGf4/ZXO6z/gSvOlGPLyTZQJ79erZ4qqKXZ3VvF0Gd3hO63TTzSAWp4Pu+VzDLu2lRkEAdy8JDh1B+ntTQP9wgMxf1GMmjRImcwDg2HSCMGuS8Kv2ZrM6eR86RwoIQWa2qvBCVc5cyedJ1NtnAXxP88NJXSJHLgF60HfUDTA43ZVaXtFjSiEWDbU93MufEP+MR6lvMB3ejB0zqowWcnl9S9j8Mrg1TBJjNKTrwu5nq2i9zWy9yWk7cJD7JQd5pe2EMAnhagmAGc=
+  app: loot-bot
   on:
     repo: damoresa/loot-bot
 branches:
   only:
-    - master
+  - master
