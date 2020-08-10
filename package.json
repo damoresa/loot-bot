@@ -10,7 +10,8 @@
     "start": "node ./src/application.js",
     "build:front": "cd webapp && yarn && yarn build",
     "clean:front": "rimraf public",
-    "postinstall": "yarn eslint && yarn clean:front && yarn build:front"
+    "postinstall": "yarn eslint && yarn clean:front && yarn build:front",
+    "test": "echo 'Not yet implemented'"
   },
   "author": "Daniel Amores <damoresac@gmail.com>",
   "dependencies": {
