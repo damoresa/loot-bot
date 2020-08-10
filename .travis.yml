@@ -17,6 +17,8 @@ deploy:
   app: loot-bot
   api_key:
     secure: $HEROKU_API_KEY
+  on:
+    repo: damoresa/loot-bot
 branches:
   only:
     - master
