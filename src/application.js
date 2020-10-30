@@ -17,7 +17,7 @@ winston.add(winston.transports.Console, {
 winston.level = process.env.LOGLEVEL || 'debug';
 
 // MongoDB connection
-mongoose.connect(constants.DATABASE);
+mongoose.connect(constants.DATABASE, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Launch Express
 launchExpress();

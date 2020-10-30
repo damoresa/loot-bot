@@ -2,7 +2,7 @@
 
 const CONSTANTS = {
     // Connectivity
-    DATABASE: process.env.MONGODB_URI,
+    DATABASE: process.env.ATLAS_MONGODB_URI,
     DISCORD: {
         BOT_AUTH_TOKEN: process.env.DISCORD_BOT_AUTH_TOKEN,
         CLIENT_ID: process.env.DISCORD_CLIENT_ID,

@@ -1,6 +1,6 @@
 {
   "name": "loot-bot",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A simple loot bot project for fun",
   "main": "src/application.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "express": "4.16.2",
     "jwt-simple": "0.5.1",
     "moment": "2.20.1",
-    "mongoose": "5.0.0-rc1",
+    "mongoose": "5.10.11",
     "passport": "0.4.0",
     "passport-jwt": "3.0.1",
     "rimraf": "2.6.2",
