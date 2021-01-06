@@ -15,7 +15,7 @@
   },
   "author": "Daniel Amores <damoresac@gmail.com>",
   "dependencies": {
-    "axios": "0.19.2",
+    "axios": "0.21.1",
     "bluebird": "3.5.3",
     "discord.js": "11.2.1",
     "dotenv": "8.2.0",
